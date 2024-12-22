@@ -1,0 +1,28 @@
+services:
+  db:
+    image: postgres:16
+    restart: always
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: nutri_price
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
+
+  app:
+    build: .
+    restart: always
+    depends_on:
+      - db
+    ports:
+      - 3000:3000
+    env_file: .env
+
+volumes:
+  db-data:
