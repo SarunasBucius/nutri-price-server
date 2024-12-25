@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/SarunasBucius/nutri-price-server/internal/model"
 	"github.com/SarunasBucius/nutri-price-server/internal/utils/uerror"
@@ -219,4 +220,28 @@ func (r *RecipeRepo) GetRecipesIngredients(ctx context.Context, recipeIDs []int)
 	}
 
 	return ingredients, nil
+}
+
+func (r *RecipeRepo) GetRecipeIDsByDate(ctx context.Context, date time.Time) ([]int, error) {
+	query := `
+	SELECT id 
+	FROM recipes 
+	WHERE dish_made_date = $1`
+
+	rows, err := r.DB.Query(ctx, query, date)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var recipeIDs []int
+	for rows.Next() {
+		var recipeID int
+		if err := rows.Scan(&recipeID); err != nil {
+			return nil, err
+		}
+		recipeIDs = append(recipeIDs, recipeID)
+	}
+
+	return recipeIDs, nil
 }

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/SarunasBucius/nutri-price-server/internal/model"
 	"github.com/SarunasBucius/nutri-price-server/internal/utils/uerror"
@@ -27,6 +28,8 @@ type IRecipeService interface {
 	GetMealPrice(ctx context.Context, recipeIDs []int) (model.CalculatedMealPrice, error)
 	GetMealNutritionalValue(ctx context.Context, recipeIDs []int) (model.CalculatedMealNutritionalValue, error)
 	DeleteRecipe(ctx context.Context, recipeID int) error
+	GetMealPriceByDate(ctx context.Context, date time.Time) (model.CalculatedMealPrice, error)
+	GetMealNutritionalValueByDate(ctx context.Context, date time.Time) (model.CalculatedMealNutritionalValue, error)
 }
 
 func (rc *RecipeAPI) InsertRecipe(w http.ResponseWriter, r *http.Request) {
@@ -124,6 +127,40 @@ func (rc *RecipeAPI) GetMealPrice(w http.ResponseWriter, r *http.Request) {
 	}
 
 	calculatedMeal, err := rc.Service.GetMealPrice(r.Context(), ids)
+	if err != nil {
+		errorResponse(r.Context(), w, err)
+		return
+	}
+
+	successResponse(r.Context(), w, calculatedMeal)
+}
+
+func (rc *RecipeAPI) GetMealNutritionalValueByDate(w http.ResponseWriter, r *http.Request) {
+	dateParam := chi.URLParam(r, "date")
+	date, err := time.Parse(time.DateOnly, dateParam)
+	if err != nil {
+		errorResponse(r.Context(), w, uerror.NewBadRequest("invalid date", err))
+		return
+	}
+
+	calculatedMeal, err := rc.Service.GetMealNutritionalValueByDate(r.Context(), date)
+	if err != nil {
+		errorResponse(r.Context(), w, err)
+		return
+	}
+
+	successResponse(r.Context(), w, calculatedMeal)
+}
+
+func (rc *RecipeAPI) GetMealPriceByDate(w http.ResponseWriter, r *http.Request) {
+	dateParam := chi.URLParam(r, "date")
+	date, err := time.Parse(time.DateOnly, dateParam)
+	if err != nil {
+		errorResponse(r.Context(), w, uerror.NewBadRequest("invalid date", err))
+		return
+	}
+
+	calculatedMeal, err := rc.Service.GetMealPriceByDate(r.Context(), date)
 	if err != nil {
 		errorResponse(r.Context(), w, err)
 		return

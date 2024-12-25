@@ -3,6 +3,7 @@ package recipe
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/SarunasBucius/nutri-price-server/internal/model"
 )
@@ -32,6 +33,7 @@ type IRecipeRepository interface {
 	UpdateRecipe(ctx context.Context, recipe model.RecipeUpdate) error
 	DeleteRecipe(ctx context.Context, recipeID int) error
 	GetRecipesIngredients(ctx context.Context, recipeIDs []int) (model.Ingredients, error)
+	GetRecipeIDsByDate(ctx context.Context, date time.Time) ([]int, error)
 }
 
 type IProductRepository interface {
@@ -89,6 +91,15 @@ func (s *Service) GetMealPrice(ctx context.Context, recipeIDs []int) (model.Calc
 	return calculateMealPrice(ingredients, products), nil
 }
 
+func (s *Service) GetMealPriceByDate(ctx context.Context, date time.Time) (model.CalculatedMealPrice, error) {
+	recipeIDs, err := s.RecipeRepo.GetRecipeIDsByDate(ctx, date)
+	if err != nil {
+		return model.CalculatedMealPrice{}, fmt.Errorf("get recipe IDs by date: %w", err)
+	}
+
+	return s.GetMealPrice(ctx, recipeIDs)
+}
+
 func (s *Service) GetMealNutritionalValue(ctx context.Context, recipeIDs []int) (model.CalculatedMealNutritionalValue, error) {
 	ingredients, err := s.RecipeRepo.GetRecipesIngredients(ctx, recipeIDs)
 	if err != nil {
@@ -101,4 +112,13 @@ func (s *Service) GetMealNutritionalValue(ctx context.Context, recipeIDs []int) 
 	}
 
 	return calculateMealNutritionalValue(ingredients, productsNutritionalValue), nil
+}
+
+func (s *Service) GetMealNutritionalValueByDate(ctx context.Context, date time.Time) (model.CalculatedMealNutritionalValue, error) {
+	recipeIDs, err := s.RecipeRepo.GetRecipeIDsByDate(ctx, date)
+	if err != nil {
+		return model.CalculatedMealNutritionalValue{}, fmt.Errorf("get recipe IDs by date: %w", err)
+	}
+
+	return s.GetMealNutritionalValue(ctx, recipeIDs)
 }
