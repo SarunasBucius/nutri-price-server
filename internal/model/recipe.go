@@ -1,10 +1,13 @@
 package model
 
+import "time"
+
 type RecipeNew struct {
-	Name        string          `json:"name"`
-	Ingredients []IngredientNew `json:"ingredients"`
-	Steps       []string        `json:"steps"`
-	Notes       string          `json:"notes"`
+	Name         string          `json:"name"`
+	Ingredients  []IngredientNew `json:"ingredients"`
+	Steps        []string        `json:"steps"`
+	Notes        string          `json:"notes"`
+	DishMadeDate *time.Time      `json:"dishMadeDate,omitempty"`
 }
 
 type IngredientNew struct {
@@ -15,19 +18,21 @@ type IngredientNew struct {
 }
 
 type Recipe struct {
-	ID          int          `json:"id"`
-	Name        string       `json:"name"`
-	Ingredients []Ingredient `json:"ingredients"`
-	Steps       []string     `json:"steps"`
-	Notes       string       `json:"notes"`
+	ID           int          `json:"id"`
+	Name         string       `json:"name"`
+	Ingredients  []Ingredient `json:"ingredients"`
+	Steps        []string     `json:"steps"`
+	Notes        string       `json:"notes"`
+	DishMadeDate *time.Time   `json:"dishMadeDate,omitempty"`
 }
 
 type RecipeUpdate struct {
-	ID          int             `json:"id"`
-	Name        string          `json:"name"`
-	Ingredients []IngredientNew `json:"ingredients"`
-	Steps       []string        `json:"steps"`
-	Notes       string          `json:"notes"`
+	ID           int             `json:"id"`
+	Name         string          `json:"name"`
+	Ingredients  []IngredientNew `json:"ingredients"`
+	Steps        []string        `json:"steps"`
+	Notes        string          `json:"notes"`
+	DishMadeDate *time.Time      `json:"dishMadeDate,omitempty"`
 }
 
 type Ingredient struct {

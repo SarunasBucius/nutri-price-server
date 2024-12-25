@@ -22,9 +22,9 @@ func NewRecipeRepo(db *pgxpool.Pool) *RecipeRepo {
 func (r *RecipeRepo) InsertRecipe(ctx context.Context, recipe model.RecipeNew) error {
 	query := `
 	INSERT INTO recipes 
-		(recipe_name, steps, notes) 
+		(recipe_name, steps, notes, dish_made_date) 
 	VALUES 
-		($1, $2, $3) 
+		($1, $2, $3, $4) 
 	RETURNING id`
 	tx, err := r.DB.Begin(ctx)
 	if err != nil {
@@ -33,7 +33,7 @@ func (r *RecipeRepo) InsertRecipe(ctx context.Context, recipe model.RecipeNew) e
 	defer tx.Rollback(ctx)
 
 	var id int
-	if err := tx.QueryRow(ctx, query, recipe.Name, recipe.Steps, recipe.Notes).Scan(&id); err != nil {
+	if err := tx.QueryRow(ctx, query, recipe.Name, recipe.Steps, recipe.Notes, recipe.DishMadeDate).Scan(&id); err != nil {
 		return err
 	}
 	if err := insertIngredients(ctx, tx, id, recipe.Ingredients); err != nil {
@@ -85,12 +85,12 @@ func (r *RecipeRepo) GetRecipesNames(ctx context.Context) ([]string, error) {
 
 func (r *RecipeRepo) GetRecipe(ctx context.Context, recipeID int) (model.Recipe, error) {
 	query := `
-	SELECT id, recipe_name, steps, notes 
+	SELECT id, recipe_name, steps, notes, dish_made_date 
 	FROM recipes 
 	WHERE id = $1`
 
 	var recipe model.Recipe
-	err := r.DB.QueryRow(ctx, query, recipeID).Scan(&recipe.ID, &recipe.Name, &recipe.Steps, &recipe.Notes)
+	err := r.DB.QueryRow(ctx, query, recipeID).Scan(&recipe.ID, &recipe.Name, &recipe.Steps, &recipe.Notes, &recipe.DishMadeDate)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return model.Recipe{}, uerror.NewNotFound("nutritional value not found", err)
 	}
@@ -136,8 +136,8 @@ func (r *RecipeRepo) getRecipeIngredients(ctx context.Context, recipeID int) ([]
 func (r *RecipeRepo) UpdateRecipe(ctx context.Context, recipe model.RecipeUpdate) error {
 	query := `
 	UPDATE recipes 
-	SET recipe_name = $1, steps = $2, notes = $3
-	WHERE id = $4`
+	SET recipe_name = $1, steps = $2, notes = $3, dish_made_date = $4
+	WHERE id = $5`
 
 	tx, err := r.DB.Begin(ctx)
 	if err != nil {
@@ -145,7 +145,7 @@ func (r *RecipeRepo) UpdateRecipe(ctx context.Context, recipe model.RecipeUpdate
 	}
 	defer tx.Rollback(ctx)
 
-	status, err := tx.Exec(ctx, query, recipe.Name, recipe.Steps, recipe.Notes, recipe.ID)
+	status, err := tx.Exec(ctx, query, recipe.Name, recipe.Steps, recipe.Notes, recipe.DishMadeDate, recipe.ID)
 	if err != nil {
 		return err
 	}
