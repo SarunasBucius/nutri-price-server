@@ -20,12 +20,14 @@ func errorResponse(ctx context.Context, w http.ResponseWriter, err error) {
 
 	responseMessage, statusCode := uerror.SanitizeError(err)
 
-	w.Header().Add("Content-Type", "application/json")
+	w.Header().Set("Content-Type", "application/json")
+
+	w.WriteHeader(statusCode)
+
 	response := map[string]string{"error": responseMessage}
 	if err := json.NewEncoder(w).Encode(response); err != nil {
 		slog.ErrorContext(ctx, "encoding error message to json", "error", err)
 	}
-	w.WriteHeader(statusCode)
 }
 
 func successResponse(ctx context.Context, w http.ResponseWriter, response any) {
