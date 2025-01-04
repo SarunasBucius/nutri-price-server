@@ -74,7 +74,7 @@ func (p Parser) ParseProducts() (model.ReceiptProducts, error) {
 func (p Parser) GetRetailer() string { return retailer }
 
 func extractProductLines(receiptLines []string) ([]unparsedProduct, error) {
-	const productsEndSeparator = "#"
+	const productsEndSeparator = "------------------------------------------------------"
 	const linesBeforeProductsList = 4
 	if len(receiptLines) <= linesBeforeProductsList {
 		return nil, fmt.Errorf("too short receipt")
