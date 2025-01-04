@@ -117,8 +117,7 @@ func extractProduct(line string, products []unparsedProduct) []unparsedProduct {
 		return products
 	}
 
-	_, err := strconv.Atoi(line)
-	if err == nil {
+	if startsWithNumericCode(line) {
 		return appendProduct(line, products)
 	}
 
@@ -130,6 +129,17 @@ func extractProduct(line string, products []unparsedProduct) []unparsedProduct {
 	// TODO: handle deposit
 
 	return products
+}
+
+func startsWithNumericCode(line string) bool {
+	if len(line) < 7 {
+		return false
+	}
+	_, err := strconv.Atoi(line[:7])
+	if err == nil {
+		return true
+	}
+	return false
 }
 
 func appendProduct(productLine string, products []unparsedProduct) []unparsedProduct {
