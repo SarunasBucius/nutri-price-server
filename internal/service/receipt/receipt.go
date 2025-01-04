@@ -24,6 +24,8 @@ func NewReceiptService(receiptRepo IReceiptRepository, productRepo IProductRepos
 
 type IReceiptRepository interface {
 	InsertRawReceipt(ctx context.Context, date time.Time, receiptLines string, products model.ReceiptProducts) error
+	GetUnprocessedReceipt(ctx context.Context) (string, error)
+	GetRawReceiptByDate(ctx context.Context, date time.Time) (string, error)
 }
 
 type IProductRepository interface {
@@ -62,4 +64,30 @@ func (s *Service) ProcessReceipt(ctx context.Context, receipt string) (model.Par
 		Retailer: receiptParser.GetRetailer(),
 		Products: products,
 	}, nil
+}
+
+func (s *Service) ProcessReceiptFromDB(ctx context.Context, receiptDate string) (model.ParseReceiptFromTextResponse, error) {
+	receipt, err := s.getReceipt(ctx, receiptDate)
+	if err != nil {
+		return model.ParseReceiptFromTextResponse{}, fmt.Errorf("get receipt: %w", err)
+	}
+	return s.ProcessReceipt(ctx, receipt)
+}
+
+func (s *Service) getReceipt(ctx context.Context, receiptDate string) (string, error) {
+	if len(receiptDate) == 0 {
+		receipt, err := s.ReceiptRepo.GetUnprocessedReceipt(ctx)
+		return receipt, fmt.Errorf("get unprocessed receipt: %w", err)
+	}
+
+	parsedDate, err := time.Parse(time.DateOnly, receiptDate)
+	if err != nil {
+		return "", fmt.Errorf("parse date: %w", err)
+	}
+	receipt, err := s.ReceiptRepo.GetRawReceiptByDate(ctx, parsedDate)
+	if err != nil {
+		return "", fmt.Errorf("get raw receipt by date: %w", err)
+	}
+
+	return receipt, nil
 }

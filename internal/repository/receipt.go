@@ -52,3 +52,32 @@ func (r *ReceiptRepo) SetRawReceiptSubmittedProducts(ctx context.Context, receip
 
 	return nil
 }
+
+func (r *ReceiptRepo) GetUnprocessedReceipt(ctx context.Context) (string, error) {
+	query := `
+	SELECT receipt
+	FROM raw_receipts
+	WHERE submitted_products IS NULL
+	LIMIT 1`
+
+	var receipt string
+	if err := r.DB.QueryRow(ctx, query).Scan(&receipt); err != nil {
+		return "", err
+	}
+
+	return receipt, nil
+}
+
+func (r *ReceiptRepo) GetRawReceiptByDate(ctx context.Context, date time.Time) (string, error) {
+	query := `
+	SELECT receipt
+	FROM raw_receipts
+	WHERE purchase_date = $1`
+
+	var receipt string
+	if err := r.DB.QueryRow(ctx, query, date).Scan(&receipt); err != nil {
+		return "", err
+	}
+
+	return receipt, nil
+}

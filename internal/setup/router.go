@@ -14,6 +14,7 @@ func LoadRouter(conf Config) *chi.Mux {
 	h := loadAPIHandlers(conf)
 
 	r.Post("/purchased-products/parse-from-receipt-text", h.receipt.ParseReceiptFromText)
+	r.Post("/purchased-products/parse-from-receipt-in-db", h.receipt.ParseReceiptInDB)
 	r.Post("/purchased-products", h.product.InsertProducts)
 	r.Get("/purchased-products/product-groups", h.product.GetProductGroups)
 	r.Get("/purchased-products", h.product.GetProducts)

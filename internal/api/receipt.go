@@ -39,6 +39,18 @@ func (rc *ReceiptAPI) ParseReceiptFromText(w http.ResponseWriter, r *http.Reques
 	successResponse(r.Context(), w, processedReceipt)
 }
 
+func (rc *ReceiptAPI) ParseReceiptInDB(w http.ResponseWriter, r *http.Request) {
+	receiptDate := r.URL.Query().Get("receiptDate")
+
+	processedReceipt, err := rc.Service.ProcessReceiptFromDB(r.Context(), receiptDate)
+	if err != nil {
+		errorResponse(r.Context(), w, err)
+		return
+	}
+
+	successResponse(r.Context(), w, processedReceipt)
+}
+
 func getReceiptFromBody(r *http.Request) (string, error) {
 	if r.Header.Get("Content-Type") == "text/plain" {
 		body, err := io.ReadAll(r.Body)
