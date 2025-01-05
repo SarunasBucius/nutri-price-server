@@ -176,24 +176,48 @@ func parseProduct(product unparsedProduct) (model.ReceiptProduct, error) {
 
 	productName := trimPriceInfoFromProductName(product.product, unparsedPrice)
 
-	// weightParser := newWeightParser(productName)
-	// quantity, err := weightParser.getQuantity()
-	// if err != nil {
-	// 	return model.ReceiptProduct{}, fmt.Errorf("extract quantity info: %w", err)
-	// }
-	// productName = weightParser.trimProductName()
+	quantity, err := getQuantity(product)
+	if err != nil {
+		return model.ReceiptProduct{}, fmt.Errorf("extract quantity info: %w", err)
+	}
 
 	return model.ReceiptProduct{
 		ProductLineInReceipt: product.product,
 		PurchasedProductNew: model.PurchasedProductNew{
-			Name:  strings.TrimSpace(productName),
-			Price: price,
-			// Quantity: quantity,
+			Name:     strings.TrimSpace(productName),
+			Price:    price,
+			Quantity: quantity,
 			// Group and notes will be filled from DB later.
 			Group: "",
 			Notes: "",
 		},
 	}, nil
+}
+
+func getQuantity(product unparsedProduct) (model.Quantity, error) {
+	if len(product.dynamicWeight) != 6 {
+		return model.Quantity{}, nil
+	}
+
+	amount, err := strconv.ParseFloat(strings.Replace(product.dynamicWeight[2], ",", ".", 1), 64)
+	if err != nil {
+		return model.Quantity{}, fmt.Errorf("parse product amount: %w", err)
+	}
+
+	switch product.dynamicWeight[3] {
+	case "vnt.":
+		return model.Quantity{
+			Amount: amount,
+			Unit:   model.Pieces,
+		}, nil
+	case "KG":
+		return model.Quantity{
+			Unit:   model.Grams,
+			Amount: amount * 1000,
+		}, nil
+	default:
+		return model.Quantity{}, nil
+	}
 }
 
 func getUnparsedPrice(product unparsedProduct) string {
