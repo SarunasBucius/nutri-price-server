@@ -9,6 +9,7 @@ import (
 
 	"github.com/SarunasBucius/nutri-price-server/internal/model"
 	"github.com/SarunasBucius/nutri-price-server/internal/utils/umath"
+	"github.com/SarunasBucius/nutri-price-server/internal/utils/ustrconv"
 )
 
 const retailer = "lidl"
@@ -229,7 +230,7 @@ func getUnparsedPrice(product unparsedProduct) string {
 }
 
 func parsePrice(product unparsedProduct, unparsedPrice string) (model.Price, error) {
-	fullPrice, err := stringToPositiveFloat(unparsedPrice)
+	fullPrice, err := ustrconv.StringToPositiveFloat(unparsedPrice)
 	if err != nil {
 		return model.Price{}, fmt.Errorf("parse product price: %w", err)
 	}
@@ -258,21 +259,10 @@ func parseDiscount(discountLine string) (float64, error) {
 	if len(discountSplitBySpace) < 2 {
 		return 0, fmt.Errorf("too short discount line")
 	}
-	return stringToPositiveFloat(discountSplitBySpace[len(discountSplitBySpace)-2])
+	return ustrconv.StringToPositiveFloat(discountSplitBySpace[len(discountSplitBySpace)-2])
 }
 
 func trimPriceInfoFromProductName(product, price string) string {
 	productWithoutPrice, _, _ := strings.Cut(product, price)
 	return productWithoutPrice
-}
-
-// TODO move to utils
-func stringToPositiveFloat(num string) (float64, error) {
-	num = strings.TrimLeft(num, "-")
-	numWithoutComma := strings.Replace(num, ",", ".", 1)
-	parsedNum, err := strconv.ParseFloat(numWithoutComma, 32)
-	if err != nil {
-		return 0, fmt.Errorf("parse string price to float: %w", err)
-	}
-	return parsedNum, nil
 }
