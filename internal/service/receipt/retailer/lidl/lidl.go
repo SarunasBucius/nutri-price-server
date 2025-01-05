@@ -103,8 +103,11 @@ func extractProduct(line string, products []unparsedProduct) []unparsedProduct {
 
 	lastProduct := len(products) - 1
 
-	// TODO handle dynamic weight here as it's always in second
-	// TODO add receipts to db manually, double check that it correcly parses lines
+	if isDeposit(line) {
+		products[lastProduct].hasDeposit = true
+		return products
+	}
+
 	if products[lastProduct].isHalf {
 		lineSplitBySpace := strings.Split(line, " ")
 		lineSplitBySpace = slices.DeleteFunc(lineSplitBySpace, func(l string) bool {
@@ -130,9 +133,11 @@ func extractProduct(line string, products []unparsedProduct) []unparsedProduct {
 		return products
 	}
 
-	// TODO: handle deposit
-
 	return products
+}
+
+func isDeposit(line string) bool {
+	return strings.Contains(line, "Užstatas")
 }
 
 func startsWithNumericCode(line string) bool {
