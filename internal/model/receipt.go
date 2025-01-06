@@ -25,10 +25,11 @@ func (p *ReceiptProducts) FillCategoriesAndNotes(productsByName map[string]Purch
 		return
 	}
 
-	for _, product := range *p {
-		dbProduct := productsByName[product.Name]
-		product.Group = dbProduct.Group
-		product.Notes = dbProduct.Notes
+	for i := range *p {
+		product := *p
+		dbProduct := productsByName[product[i].Name]
+		product[i].Group = dbProduct.Group
+		product[i].Notes = dbProduct.Notes
 	}
 }
 
