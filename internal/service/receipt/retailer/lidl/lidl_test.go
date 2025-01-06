@@ -75,7 +75,7 @@ func TestParser_ParseDate(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			p := Parser{
+			p := LidlParser{
 				ReceiptLines: tt.fields.ReceiptLines,
 				Retailer:     tt.fields.Retailer,
 			}

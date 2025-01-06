@@ -14,13 +14,13 @@ import (
 
 const retailer = "lidl"
 
-type Parser struct {
+type LidlParser struct {
 	ReceiptLines []string
 	Retailer     string
 }
 
-func NewParser(receiptLines []string) Parser {
-	return Parser{
+func NewParser(receiptLines []string) LidlParser {
+	return LidlParser{
 		ReceiptLines: receiptLines,
 		Retailer:     retailer,
 	}
@@ -34,7 +34,7 @@ type unparsedProduct struct {
 	dynamicWeight []string
 }
 
-func (p Parser) ParseDate() (time.Time, error) {
+func (p LidlParser) ParseDate() (time.Time, error) {
 	const datePositionFromEnd = 2
 
 	if len(p.ReceiptLines) < 1 {
@@ -59,7 +59,7 @@ func (p Parser) ParseDate() (time.Time, error) {
 	return parsedDate, nil
 }
 
-func (p Parser) ParseProducts() (model.ReceiptProducts, error) {
+func (p LidlParser) ParseProducts() (model.ReceiptProducts, error) {
 	unparsedProducts, err := extractProductLines(p.ReceiptLines)
 	if err != nil {
 		return nil, fmt.Errorf("extract product lines: %w", err)
@@ -76,7 +76,7 @@ func (p Parser) ParseProducts() (model.ReceiptProducts, error) {
 	return parsedProducts, nil
 }
 
-func (p Parser) GetRetailer() string { return retailer }
+func (p LidlParser) GetRetailer() string { return retailer }
 
 func extractProductLines(receiptLines []string) ([]unparsedProduct, error) {
 	const productsEndSeparator = "------------------------------------------------------"

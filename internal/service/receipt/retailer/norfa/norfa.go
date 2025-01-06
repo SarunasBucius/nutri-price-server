@@ -12,13 +12,13 @@ import (
 
 const retailer = "norfa"
 
-type Parser struct {
+type NorfaParser struct {
 	ReceiptLines []string
 	Retailer     string
 }
 
-func NewParser(receiptLines []string) Parser {
-	return Parser{
+func NewParser(receiptLines []string) NorfaParser {
+	return NorfaParser{
 		ReceiptLines: receiptLines,
 		Retailer:     retailer,
 	}
@@ -31,7 +31,7 @@ type unparsedProduct struct {
 	isHalf     bool
 }
 
-func (p Parser) ParseDate() (time.Time, error) {
+func (p NorfaParser) ParseDate() (time.Time, error) {
 	const dateCharactersNum = len(time.DateOnly)
 
 	if len(p.ReceiptLines) < 2 {
@@ -51,7 +51,7 @@ func (p Parser) ParseDate() (time.Time, error) {
 	return parsedDate, nil
 }
 
-func (p Parser) ParseProducts() (model.ReceiptProducts, error) {
+func (p NorfaParser) ParseProducts() (model.ReceiptProducts, error) {
 	unparsedProducts, err := extractProductLines(p.ReceiptLines)
 	if err != nil {
 		return nil, fmt.Errorf("extract product lines: %w", err)
@@ -68,7 +68,7 @@ func (p Parser) ParseProducts() (model.ReceiptProducts, error) {
 	return parsedProducts, nil
 }
 
-func (p Parser) GetRetailer() string { return retailer }
+func (p NorfaParser) GetRetailer() string { return retailer }
 
 func extractProductLines(receiptLines []string) ([]unparsedProduct, error) {
 	const productsEndSeparator = "#"
