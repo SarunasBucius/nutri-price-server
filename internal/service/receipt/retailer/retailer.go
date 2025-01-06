@@ -1,6 +1,7 @@
 package retailer
 
 import (
+	"slices"
 	"strings"
 	"time"
 
@@ -11,11 +12,15 @@ import (
 )
 
 func NewReceiptParser(receipt string) (ReceiptParser, error) {
+	receiptLines := strings.Split(receipt, "\n")
+	receiptLines = slices.DeleteFunc(receiptLines, func(l string) bool {
+		return l == "" || l == "\r"
+	})
 	switch {
 	case strings.Contains(receipt, "UAB NORFOS MAŽMENA"):
-		return norfa.NewParser(strings.Split(receipt, "\n")), nil
+		return norfa.NewParser(receiptLines), nil
 	case strings.Contains(receipt, "Lidl Lietuva"):
-		return lidl.NewParser(strings.Split(receipt, "\n")), nil
+		return lidl.NewParser(receiptLines), nil
 	default:
 		return nil, uerror.NewBadRequest("unknown retailer", nil)
 	}
