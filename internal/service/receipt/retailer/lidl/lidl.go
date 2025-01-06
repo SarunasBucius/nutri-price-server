@@ -245,7 +245,7 @@ func parsePrice(product unparsedProduct, unparsedPrice string) (model.Price, err
 		return model.Price{}, fmt.Errorf("parse product price: %w", err)
 	}
 	if product.hasDeposit {
-		fullPrice -= 0.10
+		fullPrice += 0.10
 	}
 
 	discount, err := parseDiscount(product.discount)
