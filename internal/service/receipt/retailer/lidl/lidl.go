@@ -215,13 +215,13 @@ func getQuantity(product unparsedProduct) (model.Quantity, error) {
 		return model.Quantity{}, fmt.Errorf("parse product amount: %w", err)
 	}
 
-	switch product.dynamicWeight[3] {
+	switch strings.ToLower(product.dynamicWeight[3]) {
 	case "vnt.":
 		return model.Quantity{
 			Amount: amount,
 			Unit:   model.Pieces,
 		}, nil
-	case "KG":
+	case "kg":
 		return model.Quantity{
 			Unit:   model.Grams,
 			Amount: amount * 1000,
