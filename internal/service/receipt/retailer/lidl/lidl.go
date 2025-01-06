@@ -124,7 +124,7 @@ func extractProduct(line string, products []unparsedProduct) []unparsedProduct {
 		lineSplitBySpace = slices.DeleteFunc(lineSplitBySpace, func(l string) bool {
 			return l == ""
 		})
-		isDynamic := len(lineSplitBySpace) == 6 && lineSplitBySpace[1] == "X"
+		isDynamic := len(lineSplitBySpace) == 6 && strings.ToLower(lineSplitBySpace[1]) == "x"
 		if isDynamic {
 			products[lastProduct].dynamicWeight = lineSplitBySpace
 			products[lastProduct].isHalf = false
