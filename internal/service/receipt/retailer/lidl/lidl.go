@@ -37,13 +37,9 @@ type unparsedProduct struct {
 func (p LidlParser) ParseDate() (time.Time, error) {
 	const datePositionFromEnd = 2
 
-	if len(p.ReceiptLines) < 1 {
-		return time.Time{}, fmt.Errorf("unexpected receipt length")
-	}
-
-	dateLine := p.ReceiptLines[len(p.ReceiptLines)-1]
-	if dateLine == "" {
-		dateLine = p.ReceiptLines[len(p.ReceiptLines)-2]
+	dateLine, err := getDateLine(p.ReceiptLines)
+	if err != nil {
+		return time.Time{}, fmt.Errorf("get date line: %w", err)
 	}
 
 	dateLineSplitBySpace := strings.Split(dateLine, " ")
@@ -57,6 +53,17 @@ func (p LidlParser) ParseDate() (time.Time, error) {
 		return time.Time{}, fmt.Errorf("parse receipt date: %w", err)
 	}
 	return parsedDate, nil
+}
+
+func getDateLine(receiptLines []string) (string, error) {
+	if len(receiptLines) < 6 {
+		return "", fmt.Errorf("unexpected receipt length")
+	}
+
+	if strings.Contains(receiptLines[len(receiptLines)-1], "Kvito kodas") {
+		return receiptLines[len(receiptLines)-6], nil
+	}
+	return receiptLines[len(receiptLines)-1], nil
 }
 
 func (p LidlParser) ParseProducts() (model.ReceiptProducts, error) {
