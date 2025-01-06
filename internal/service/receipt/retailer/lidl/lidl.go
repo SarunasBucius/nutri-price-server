@@ -42,6 +42,9 @@ func (p Parser) ParseDate() (time.Time, error) {
 	}
 
 	dateLine := p.ReceiptLines[len(p.ReceiptLines)-1]
+	if dateLine == "" {
+		dateLine = p.ReceiptLines[len(p.ReceiptLines)-2]
+	}
 
 	dateLineSplitBySpace := strings.Split(dateLine, " ")
 
