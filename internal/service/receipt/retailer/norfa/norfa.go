@@ -2,23 +2,23 @@ package norfa
 
 import (
 	"fmt"
-	"strconv"
 	"strings"
 	"time"
 
 	"github.com/SarunasBucius/nutri-price-server/internal/model"
 	"github.com/SarunasBucius/nutri-price-server/internal/utils/umath"
+	"github.com/SarunasBucius/nutri-price-server/internal/utils/ustrconv"
 )
 
 const retailer = "norfa"
 
-type Parser struct {
+type NorfaParser struct {
 	ReceiptLines []string
 	Retailer     string
 }
 
-func NewParser(receiptLines []string) Parser {
-	return Parser{
+func NewParser(receiptLines []string) NorfaParser {
+	return NorfaParser{
 		ReceiptLines: receiptLines,
 		Retailer:     retailer,
 	}
@@ -31,7 +31,7 @@ type unparsedProduct struct {
 	isHalf     bool
 }
 
-func (p Parser) ParseDate() (time.Time, error) {
+func (p NorfaParser) ParseDate() (time.Time, error) {
 	const dateCharactersNum = len(time.DateOnly)
 
 	if len(p.ReceiptLines) < 2 {
@@ -51,7 +51,7 @@ func (p Parser) ParseDate() (time.Time, error) {
 	return parsedDate, nil
 }
 
-func (p Parser) ParseProducts() (model.ReceiptProducts, error) {
+func (p NorfaParser) ParseProducts() (model.ReceiptProducts, error) {
 	unparsedProducts, err := extractProductLines(p.ReceiptLines)
 	if err != nil {
 		return nil, fmt.Errorf("extract product lines: %w", err)
@@ -68,7 +68,7 @@ func (p Parser) ParseProducts() (model.ReceiptProducts, error) {
 	return parsedProducts, nil
 }
 
-func (p Parser) GetRetailer() string { return retailer }
+func (p NorfaParser) GetRetailer() string { return retailer }
 
 func extractProductLines(receiptLines []string) ([]unparsedProduct, error) {
 	const productsEndSeparator = "#"
@@ -127,12 +127,12 @@ func getUnparsedPrice(product string) string {
 }
 
 func parsePrice(product unparsedProduct, unparsedPrice string) (model.Price, error) {
-	fullPrice, err := stringToPositiveFloat(unparsedPrice)
+	fullPrice, err := ustrconv.StringToPositiveFloat(unparsedPrice)
 	if err != nil {
 		return model.Price{}, fmt.Errorf("parse product price: %w", err)
 	}
 	if product.hasDeposit {
-		fullPrice -= 0.10
+		fullPrice += 0.10
 	}
 
 	discount, err := parseDiscount(product.discount)
@@ -156,17 +156,7 @@ func parseDiscount(discountLine string) (float64, error) {
 	if len(discountSplitBySpace) < 2 {
 		return 0, fmt.Errorf("too short discount line")
 	}
-	return stringToPositiveFloat(discountSplitBySpace[len(discountSplitBySpace)-2])
-}
-
-func stringToPositiveFloat(num string) (float64, error) {
-	num = strings.TrimLeft(num, "-")
-	numWithoutComma := strings.Replace(num, ",", ".", 1)
-	parsedNum, err := strconv.ParseFloat(numWithoutComma, 32)
-	if err != nil {
-		return 0, fmt.Errorf("parse string price to float: %w", err)
-	}
-	return parsedNum, nil
+	return ustrconv.StringToPositiveFloat(discountSplitBySpace[len(discountSplitBySpace)-2])
 }
 
 func trimPriceInfoFromProductName(product, price string) string {
