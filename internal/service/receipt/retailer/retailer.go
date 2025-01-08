@@ -7,6 +7,7 @@ import (
 
 	"github.com/SarunasBucius/nutri-price-server/internal/model"
 	"github.com/SarunasBucius/nutri-price-server/internal/service/receipt/retailer/lidl"
+	"github.com/SarunasBucius/nutri-price-server/internal/service/receipt/retailer/maxima"
 	"github.com/SarunasBucius/nutri-price-server/internal/service/receipt/retailer/norfa"
 	"github.com/SarunasBucius/nutri-price-server/internal/utils/uerror"
 )
@@ -21,6 +22,8 @@ func NewReceiptParser(receipt string) (ReceiptParser, error) {
 		return norfa.NewParser(receiptLines), nil
 	case strings.Contains(receipt, "Lidl Lietuva"):
 		return lidl.NewParser(receiptLines), nil
+	case strings.Contains(receipt, "MAXIMA"):
+		return maxima.NewParser(receiptLines), nil
 	default:
 		return nil, uerror.NewBadRequest("unknown retailer", nil)
 	}

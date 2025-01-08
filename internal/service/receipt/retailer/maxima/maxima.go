@@ -1,4 +1,4 @@
-package lidl
+package maxima
 
 import (
 	"fmt"
@@ -12,15 +12,15 @@ import (
 	"github.com/SarunasBucius/nutri-price-server/internal/utils/ustrconv"
 )
 
-const retailer = "lidl"
+const retailer = "maxima"
 
-type LidlParser struct {
+type MaximaParser struct {
 	ReceiptLines []string
 	Retailer     string
 }
 
-func NewParser(receiptLines []string) LidlParser {
-	return LidlParser{
+func NewParser(receiptLines []string) MaximaParser {
+	return MaximaParser{
 		ReceiptLines: receiptLines,
 		Retailer:     retailer,
 	}
@@ -34,28 +34,27 @@ type unparsedProduct struct {
 	dynamicWeight []string
 }
 
-func (p LidlParser) ParseDate() (time.Time, error) {
-	const datePositionFromEnd = 2
+func (p MaximaParser) ParseDate() (time.Time, error) {
+	const datePosition = 1
 
-	dateLine, err := getDateLine(p.ReceiptLines)
-	if err != nil {
-		return time.Time{}, fmt.Errorf("get date line: %w", err)
-	}
+	dateLine := getDateLine(p.ReceiptLines)
 
-	dateLineSplitBySpace := strings.Split(dateLine, " ")
+	dateLineSplitBySpace := slices.DeleteFunc(strings.Split(dateLine, " "), func(word string) bool {
+		return word == ""
+	})
 
-	if len(dateLineSplitBySpace) < datePositionFromEnd {
+	if len(dateLineSplitBySpace) <= datePosition {
 		return time.Time{}, fmt.Errorf("unexpected date line contents: %s", dateLine)
 	}
 
-	parsedDate, err := time.Parse(time.DateOnly, dateLineSplitBySpace[len(dateLineSplitBySpace)-datePositionFromEnd])
+	parsedDate, err := time.Parse(time.DateOnly, dateLineSplitBySpace[datePosition])
 	if err != nil {
 		return time.Time{}, fmt.Errorf("parse receipt date: %w", err)
 	}
 	return parsedDate, nil
 }
 
-func (p LidlParser) ParseProducts() (model.ReceiptProducts, error) {
+func (p MaximaParser) ParseProducts() (model.ReceiptProducts, error) {
 	unparsedProducts, err := extractProductLines(p.ReceiptLines)
 	if err != nil {
 		return nil, fmt.Errorf("extract product lines: %w", err)
@@ -72,32 +71,30 @@ func (p LidlParser) ParseProducts() (model.ReceiptProducts, error) {
 	return parsedProducts, nil
 }
 
-func (p LidlParser) GetRetailer() string { return retailer }
+func (p MaximaParser) GetRetailer() string { return retailer }
 
-func getDateLine(receiptLines []string) (string, error) {
-	if len(receiptLines) < 6 {
-		return "", fmt.Errorf("unexpected receipt length")
+func getDateLine(receiptLines []string) string {
+	for i := len(receiptLines) - 1; i >= 0; i-- {
+		if strings.Contains(strings.ToLower(receiptLines[i]), "laikas") {
+			return receiptLines[i]
+		}
 	}
-
-	if strings.Contains(receiptLines[len(receiptLines)-1], "Kvito kodas") {
-		return receiptLines[len(receiptLines)-6], nil
-	}
-	return receiptLines[len(receiptLines)-1], nil
+	return ""
 }
 
 func extractProductLines(receiptLines []string) ([]unparsedProduct, error) {
-	const productsEndSeparator = "------------------------------------------------------"
-	const linesBeforeProductsList = 4
-	if len(receiptLines) <= linesBeforeProductsList {
+	const productsEndSeparator = "========================"
+	productsListStart := findProductsListStart(receiptLines)
+	if len(receiptLines) <= productsListStart {
 		return nil, fmt.Errorf("too short receipt")
 	}
-	receiptLines = receiptLines[linesBeforeProductsList:]
+	receiptLines = receiptLines[productsListStart:]
 
 	var products []unparsedProduct
 	for i := range receiptLines {
 		receiptLineWithoutCarriage := strings.ReplaceAll(receiptLines[i], "\r", "")
 
-		if strings.HasSuffix(receiptLineWithoutCarriage, productsEndSeparator) {
+		if strings.HasPrefix(receiptLineWithoutCarriage, productsEndSeparator) {
 			break
 		}
 
@@ -105,6 +102,15 @@ func extractProductLines(receiptLines []string) ([]unparsedProduct, error) {
 	}
 
 	return products, nil
+}
+
+func findProductsListStart(receiptLines []string) int {
+	for i, line := range receiptLines {
+		if strings.Contains(strings.ToLower(line), "kvitas") {
+			return i + 1
+		}
+	}
+	return -1
 }
 
 func extractProduct(line string, products []unparsedProduct) []unparsedProduct {
@@ -119,47 +125,40 @@ func extractProduct(line string, products []unparsedProduct) []unparsedProduct {
 		return products
 	}
 
-	if products[lastProduct].isHalf {
-		lineSplitBySpace := strings.Split(line, " ")
-		lineSplitBySpace = slices.DeleteFunc(lineSplitBySpace, func(l string) bool {
-			return l == ""
-		})
-		isDynamic := len(lineSplitBySpace) == 6 && strings.ToLower(lineSplitBySpace[1]) == "x"
-		if isDynamic {
-			products[lastProduct].dynamicWeight = lineSplitBySpace
-			products[lastProduct].isHalf = false
-			return products
-		}
+	lineSplitBySpace := strings.Split(line, " ")
+	lineSplitBySpace = slices.DeleteFunc(lineSplitBySpace, func(l string) bool {
+		return l == ""
+	})
+	isDynamic := len(lineSplitBySpace) >= 4 && strings.ToLower(lineSplitBySpace[1]) == "x"
+	if isDynamic {
+		products[lastProduct].dynamicWeight = lineSplitBySpace
+		products[lastProduct].isHalf = false
+		return products
+	}
+
+	if products[lastProduct].isHalf && products[lastProduct].discount == "" {
 		products[lastProduct].product += " " + line
 		products[lastProduct].isHalf = !strings.HasSuffix(line, "A")
 		return products
 	}
 
-	if startsWithNumericCode(line) {
-		return appendProduct(line, products)
+	if products[lastProduct].isHalf {
+		products[lastProduct].discount += " " + line
+		products[lastProduct].isHalf = false
+		return products
 	}
 
 	if isDiscount(line) {
 		products[lastProduct].discount = line
+		products[lastProduct].isHalf = !strings.HasSuffix(line, "A")
 		return products
 	}
 
-	return products
+	return appendProduct(line, products)
 }
 
 func isDeposit(line string) bool {
-	return strings.Contains(line, "Užstatas")
-}
-
-func startsWithNumericCode(line string) bool {
-	if len(line) < 7 {
-		return false
-	}
-	_, err := strconv.Atoi(line[:7])
-	if err == nil {
-		return true
-	}
-	return false
+	return strings.Contains(line, "depozitinė")
 }
 
 func appendProduct(productLine string, products []unparsedProduct) []unparsedProduct {
@@ -172,13 +171,10 @@ func appendProduct(productLine string, products []unparsedProduct) []unparsedPro
 
 func isDiscount(product string) bool {
 	lowerCaseProduct := strings.ToLower(product)
-	return strings.Contains(lowerCaseProduct, "nuolaida") && strings.Contains(lowerCaseProduct, "a")
+	return strings.Contains(lowerCaseProduct, "nuolaida")
 }
 
 func parseProduct(product unparsedProduct) (model.ReceiptProduct, error) {
-	const irrelevantProductPrefixLength = 7
-	product.product = product.product[irrelevantProductPrefixLength:]
-
 	unparsedPrice := getUnparsedPrice(product)
 	price, err := parsePrice(product, unparsedPrice)
 	if err != nil {
@@ -206,7 +202,7 @@ func parseProduct(product unparsedProduct) (model.ReceiptProduct, error) {
 }
 
 func getQuantity(product unparsedProduct) (model.Quantity, error) {
-	if len(product.dynamicWeight) != 6 {
+	if len(product.dynamicWeight) != 4 && len(product.dynamicWeight) != 6 {
 		return model.Quantity{}, nil
 	}
 
@@ -232,7 +228,7 @@ func getQuantity(product unparsedProduct) (model.Quantity, error) {
 }
 
 func getUnparsedPrice(product unparsedProduct) string {
-	if len(product.dynamicWeight) >= 2 {
+	if len(product.dynamicWeight) == 6 {
 		return product.dynamicWeight[len(product.dynamicWeight)-2]
 	}
 	productSplitBySpaces := strings.Split(product.product, " ")
