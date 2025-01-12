@@ -61,7 +61,7 @@ func (p LidlParser) ParseProducts() (model.ReceiptProducts, error) {
 		return nil, fmt.Errorf("extract product lines: %w", err)
 	}
 
-	parsedProducts := make([]model.ReceiptProduct, 0, len(unparsedProducts))
+	parsedProducts := make([]model.PurchasedProductNew, 0, len(unparsedProducts))
 	for _, product := range unparsedProducts {
 		parsedProduct, err := parseProduct(product)
 		if err != nil {
@@ -173,33 +173,30 @@ func isDiscount(product string) bool {
 	return strings.Contains(lowerCaseProduct, "nuolaida") && strings.Contains(lowerCaseProduct, "a")
 }
 
-func parseProduct(product unparsedProduct) (model.ReceiptProduct, error) {
+func parseProduct(product unparsedProduct) (model.PurchasedProductNew, error) {
 	const irrelevantProductPrefixLength = 7
 	product.product = product.product[irrelevantProductPrefixLength:]
 
 	unparsedPrice := getUnparsedPrice(product)
 	price, err := parsePrice(product, unparsedPrice)
 	if err != nil {
-		return model.ReceiptProduct{}, err
+		return model.PurchasedProductNew{}, err
 	}
 
 	productName := trimPriceInfoFromProductName(product.product, unparsedPrice)
 
 	quantity, err := getQuantity(product)
 	if err != nil {
-		return model.ReceiptProduct{}, fmt.Errorf("extract quantity info: %w", err)
+		return model.PurchasedProductNew{}, fmt.Errorf("extract quantity info: %w", err)
 	}
 
-	return model.ReceiptProduct{
-		ProductLineInReceipt: product.product,
-		PurchasedProductNew: model.PurchasedProductNew{
-			Name:     strings.TrimSpace(productName),
-			Price:    price,
-			Quantity: quantity,
-			// Group and notes will be filled from DB later.
-			Group: "",
-			Notes: "",
-		},
+	return model.PurchasedProductNew{
+		Name:     strings.TrimSpace(productName),
+		Price:    price,
+		Quantity: quantity,
+		// Group and notes will be filled from DB later.
+		Group: "",
+		Notes: "",
 	}, nil
 }
 

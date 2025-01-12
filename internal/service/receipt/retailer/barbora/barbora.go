@@ -61,7 +61,7 @@ func (p BarboraParser) ParseProducts() (model.ReceiptProducts, error) {
 		return nil, fmt.Errorf("get discounts by product: %w", err)
 	}
 
-	parsedProducts := make([]model.ReceiptProduct, 0, len(unparsedProducts))
+	parsedProducts := make([]model.PurchasedProductNew, 0, len(unparsedProducts))
 	for _, product := range unparsedProducts {
 		parsedProduct, err := parseProduct(product, discountsByProduct)
 		if err != nil {
@@ -74,10 +74,10 @@ func (p BarboraParser) ParseProducts() (model.ReceiptProducts, error) {
 
 func (p BarboraParser) GetRetailer() string { return retailer }
 
-func parseProduct(product unparsedProduct, discountsByProduct map[string]string) (model.ReceiptProduct, error) {
+func parseProduct(product unparsedProduct, discountsByProduct map[string]string) (model.PurchasedProductNew, error) {
 	productSplitBySpace := strings.Split(product.product, " ")
 	if len(productSplitBySpace) < 9 {
-		return model.ReceiptProduct{}, fmt.Errorf("unexpected product line: %s", product.product)
+		return model.PurchasedProductNew{}, fmt.Errorf("unexpected product line: %s", product)
 	}
 
 	productName := strings.Join(productSplitBySpace[1:len(productSplitBySpace)-7], " ")
@@ -85,26 +85,23 @@ func parseProduct(product unparsedProduct, discountsByProduct map[string]string)
 	unparsedPrice := strings.TrimPrefix(productSplitBySpace[len(productSplitBySpace)-1], "€")
 	price, err := parsePrice(unparsedPrice, discountsByProduct[productName])
 	if err != nil {
-		return model.ReceiptProduct{}, fmt.Errorf("parse price: %w", err)
+		return model.PurchasedProductNew{}, fmt.Errorf("parse price: %w", err)
 	}
 
 	amount := productSplitBySpace[len(productSplitBySpace)-7]
 	unit := productSplitBySpace[len(productSplitBySpace)-6]
 	quantity, err := getQuantity(amount, unit)
 	if err != nil {
-		return model.ReceiptProduct{}, fmt.Errorf("get quantity: %w", err)
+		return model.PurchasedProductNew{}, fmt.Errorf("get quantity: %w", err)
 	}
 
-	return model.ReceiptProduct{
-		ProductLineInReceipt: product.product,
-		PurchasedProductNew: model.PurchasedProductNew{
+	return model.PurchasedProductNew{
 			Name:     productName,
 			Price:    price,
 			Quantity: quantity,
 			// Group and notes will be filled from DB later.
 			Group: "",
 			Notes: "",
-		},
 	}, nil
 }
 

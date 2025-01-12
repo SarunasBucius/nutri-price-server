@@ -54,28 +54,19 @@ func TestParser_ParseProducts(t *testing.T) {
 			fields: fields{ReceiptLines: strings.Split(receiptExample, "\n"), Retailer: "norfa"},
 			want: model.ReceiptProducts{
 				{
-					ProductLineInReceipt: "Ledai AURUM 100ml su kakaviniu glaistu 0,39 M1",
-					PurchasedProductNew: model.PurchasedProductNew{
-						Name:     "Ledai AURUM 100ml su kakaviniu glaistu",
-						Price:    model.Price{Paid: 0.39, Full: 0.39},
-						Quantity: model.Quantity{Unit: model.Milliliters, Amount: 100},
-					},
+					Name:     "Ledai AURUM 100ml su kakaviniu glaistu",
+					Price:    model.Price{Paid: 0.39, Full: 0.39},
+					Quantity: model.Quantity{Unit: model.Milliliters, Amount: 100},
 				},
 				{
-					ProductLineInReceipt: "Salierų stiebai, 1kg 0,466x1,95 0,91 M1",
-					PurchasedProductNew: model.PurchasedProductNew{
-						Name:     "Salierų stiebai",
-						Price:    model.Price{Paid: 0.46, Full: 0.91, Discount: 0.45},
-						Quantity: model.Quantity{Unit: model.Grams, Amount: 466},
-					},
+					Name:     "Salierų stiebai",
+					Price:    model.Price{Paid: 0.46, Full: 0.91, Discount: 0.45},
+					Quantity: model.Quantity{Unit: model.Grams, Amount: 466},
 				},
 				{
-					ProductLineInReceipt: "Raudonieji lęšiai SKANĖJA, 500g 1,89 M1",
-					PurchasedProductNew: model.PurchasedProductNew{
-						Name:     "Raudonieji lęšiai SKANĖJA, 500g",
-						Price:    model.Price{Paid: 1.89, Full: 1.89},
-						Quantity: model.Quantity{Unit: model.Grams, Amount: 500},
-					},
+					Name:     "Raudonieji lęšiai SKANĖJA, 500g",
+					Price:    model.Price{Paid: 1.89, Full: 1.89},
+					Quantity: model.Quantity{Unit: model.Grams, Amount: 500},
 				},
 			},
 		},

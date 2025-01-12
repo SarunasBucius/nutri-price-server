@@ -1,11 +1,6 @@
 package model
 
-type ReceiptProduct struct {
-	PurchasedProductNew
-	ProductLineInReceipt string `json:"productLineInReceipt"`
-}
-
-type ReceiptProducts []ReceiptProduct
+type ReceiptProducts []PurchasedProductNew
 
 func (p *ReceiptProducts) GetNames() []string {
 	if p == nil {

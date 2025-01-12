@@ -57,7 +57,7 @@ func (p NorfaParser) ParseProducts() (model.ReceiptProducts, error) {
 		return nil, fmt.Errorf("extract product lines: %w", err)
 	}
 
-	parsedProducts := make([]model.ReceiptProduct, 0, len(unparsedProducts))
+	parsedProducts := make([]model.PurchasedProductNew, 0, len(unparsedProducts))
 	for _, product := range unparsedProducts {
 		parsedProduct, err := parseProduct(product)
 		if err != nil {
@@ -90,11 +90,11 @@ func extractProductLines(receiptLines []string) ([]unparsedProduct, error) {
 	return products, nil
 }
 
-func parseProduct(product unparsedProduct) (model.ReceiptProduct, error) {
+func parseProduct(product unparsedProduct) (model.PurchasedProductNew, error) {
 	unparsedPrice := getUnparsedPrice(product.product)
 	price, err := parsePrice(product, unparsedPrice)
 	if err != nil {
-		return model.ReceiptProduct{}, err
+		return model.PurchasedProductNew{}, err
 	}
 
 	productName := trimPriceInfoFromProductName(product.product, unparsedPrice)
@@ -102,20 +102,17 @@ func parseProduct(product unparsedProduct) (model.ReceiptProduct, error) {
 	weightParser := newWeightParser(productName)
 	quantity, err := weightParser.getQuantity()
 	if err != nil {
-		return model.ReceiptProduct{}, fmt.Errorf("extract quantity info: %w", err)
+		return model.PurchasedProductNew{}, fmt.Errorf("extract quantity info: %w", err)
 	}
 	productName = weightParser.trimProductName()
 
-	return model.ReceiptProduct{
-		ProductLineInReceipt: product.product,
-		PurchasedProductNew: model.PurchasedProductNew{
-			Name:     strings.TrimSpace(productName),
-			Price:    price,
-			Quantity: quantity,
-			// Group and notes will be filled from DB later.
-			Group: "",
-			Notes: "",
-		},
+	return model.PurchasedProductNew{
+		Name:     strings.TrimSpace(productName),
+		Price:    price,
+		Quantity: quantity,
+		// Group and notes will be filled from DB later.
+		Group: "",
+		Notes: "",
 	}, nil
 }
 
