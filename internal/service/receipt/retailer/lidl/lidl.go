@@ -95,13 +95,11 @@ func extractProductLines(receiptLines []string) ([]unparsedProduct, error) {
 
 	var products []unparsedProduct
 	for i := range receiptLines {
-		receiptLineWithoutCarriage := strings.ReplaceAll(receiptLines[i], "\r", "")
-
-		if strings.HasSuffix(receiptLineWithoutCarriage, productsEndSeparator) {
+		if strings.HasSuffix(receiptLines[i], productsEndSeparator) {
 			break
 		}
 
-		products = extractProduct(receiptLineWithoutCarriage, products)
+		products = extractProduct(receiptLines[i], products)
 	}
 
 	return products, nil

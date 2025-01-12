@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/SarunasBucius/nutri-price-server/internal/model"
+	"github.com/SarunasBucius/nutri-price-server/internal/service/receipt/retailer/barbora"
 	"github.com/SarunasBucius/nutri-price-server/internal/service/receipt/retailer/lidl"
 	"github.com/SarunasBucius/nutri-price-server/internal/service/receipt/retailer/maxima"
 	"github.com/SarunasBucius/nutri-price-server/internal/service/receipt/retailer/norfa"
@@ -13,9 +14,10 @@ import (
 )
 
 func NewReceiptParser(receipt string) (ReceiptParser, error) {
+	receipt = strings.ReplaceAll(receipt, "\r", "")
 	receiptLines := strings.Split(receipt, "\n")
 	receiptLines = slices.DeleteFunc(receiptLines, func(l string) bool {
-		return l == "" || l == "\r"
+		return l == ""
 	})
 	switch {
 	case strings.Contains(receipt, "UAB NORFOS MAŽMENA"):
@@ -24,6 +26,8 @@ func NewReceiptParser(receipt string) (ReceiptParser, error) {
 		return lidl.NewParser(receiptLines), nil
 	case strings.Contains(receipt, "MAXIMA"):
 		return maxima.NewParser(receiptLines), nil
+	case strings.Contains(receipt, "Barbora"):
+		return barbora.NewParser(receiptLines), nil
 	default:
 		return nil, uerror.NewBadRequest("unknown retailer", nil)
 	}
