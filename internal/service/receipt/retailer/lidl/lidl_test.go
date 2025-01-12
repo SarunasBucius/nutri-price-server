@@ -5,33 +5,23 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/SarunasBucius/nutri-price-server/internal/model"
+	"github.com/stretchr/testify/require"
 )
 
-const receiptExample = `
-UAB "Lidl Lietuva" Į. k.: 111791015          
+const receiptExample = `UAB "Lidl Lietuva" Į. k.: 111791015          
            ...          
 PVM mokėtojo kodas LT117910113                        
 Kvitas 64/128                                #00017499
-7602643   Pop.pirk.maišelis                     0,20 A
-0082231   Ilgavaisis agurkas                    0,99 A
-0048087   Feta sūris                            2,69 A
-7801405   Vištų kiaušiniai L                    1,75 A
-5900018   Virti avinžirniai                     1,49 A
-0083836   Tamsūs smulk. slyv. pomidorai         2,49 A
-5528568   Brokoliai                             1,75 A
 0159177   Tamsusis šokoladas            
   0,99 X 2,000 vnt.                             1,98 A
-0082615   Paprikos raudonosios          
-  3,49 X 0,298 KG                               1,04 A
 0080505   Vynuogės žal.be kaul                  1,29 A
 0080206   Obuol. Crimson Snow           
   1,89 X 1,232 KG                               2,33 A
 7605416   Juod.duon.su saulėg.                  1,79 A
 Taikoma nuolaida                        
 Nuolaida                                       -0,54 A
-0082180   Baklažanai                    
-  2,99 X 0,354 KG                               1,06 A
-0003010   Vienkart. maišelis                    0,01 A
 ------------------------------------------------------
 Tarpinė suma                                     20,32
 ======================================================
@@ -87,6 +77,82 @@ func TestParser_ParseDate(t *testing.T) {
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Parser.ParseDate() = %v, want %v", got, tt.want)
 			}
+		})
+	}
+}
+
+func TestLidlParser_ParseProducts(t *testing.T) {
+	type fields struct {
+		ReceiptLines []string
+		Retailer     string
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		want    model.ReceiptProducts
+		wantErr bool
+	}{
+		{
+			name:   "parse_products",
+			fields: fields{ReceiptLines: strings.Split(receiptExample, "\n"), Retailer: "lidl"},
+			want: model.ReceiptProducts{
+				{
+					Name: "Tamsusis šokoladas",
+					Price: model.Price{
+						Discount: 0,
+						Paid:     1.98,
+						Full:     1.98,
+					},
+					Quantity: model.Quantity{
+						Unit:   model.Pieces,
+						Amount: 2,
+					},
+				},
+				{
+					Name: "Vynuogės žal.be kaul",
+					Price: model.Price{
+						Discount: 0,
+						Paid:     1.29,
+						Full:     1.29,
+					},
+				},
+				{
+					Name: "Obuol. Crimson Snow",
+					Price: model.Price{
+						Discount: 0,
+						Paid:     2.33,
+						Full:     2.33,
+					},
+					Quantity: model.Quantity{
+						Unit:   model.Grams,
+						Amount: 1232,
+					},
+				},
+				{
+					Name: "Juod.duon.su saulėg.",
+					Price: model.Price{
+						Discount: 0.54,
+						Paid:     1.25,
+						Full:     1.79,
+					},
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			p := LidlParser{
+				ReceiptLines: tt.fields.ReceiptLines,
+				Retailer:     tt.fields.Retailer,
+			}
+			got, err := p.ParseProducts()
+			if tt.wantErr {
+				require.Error(t, err)
+				return
+			}
+
+			require.NoError(t, err)
+			require.Equal(t, tt.want, got)
 		})
 	}
 }
