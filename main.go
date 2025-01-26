@@ -27,5 +27,8 @@ func main() {
 
 	slog.InfoContext(ctx, "Listening...", "port", config.Port)
 
-	http.ListenAndServe(config.Port, r)
+	if err := http.ListenAndServe(config.Port, r); err != nil {
+		slog.Error("listen and serve", "error", err)
+		return
+	}
 }
