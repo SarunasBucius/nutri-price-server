@@ -24,6 +24,7 @@ func LoadRouter(conf Config) *chi.Mux {
 
 	r.Post("/nutritional-values", h.nv.InsertNutritionalValues)
 	r.Get("/nutritional-values", h.nv.GetNutritionalValues)
+	r.Get("/nutritional-values/available-units", h.nv.GetNutritionalValuesUnits)
 	r.Get("/nutritional-values/{nutritionalValueID}", h.nv.GetNutritionalValue)
 	r.Put("/nutritional-values/{nutritionalValueID}", h.nv.UpdateNutritionalValue)
 	r.Delete("/nutritional-values/{nutritionalValueID}", h.nv.DeleteNutritionalValues)

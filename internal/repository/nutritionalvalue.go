@@ -119,6 +119,35 @@ func (n *NutritionalValueRepo) GetProductNutritionalValue(ctx context.Context, n
 	return pnv, nil
 }
 
+func (n *NutritionalValueRepo) GetNutritionalValuesUnits(ctx context.Context) (map[string][]string, error) {
+	query := `
+	SELECT 
+		product, measurement_unit
+	FROM nutritional_values`
+
+	rows, err := n.DB.Query(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	nvUnits := make(map[string][]string)
+	for rows.Next() {
+		var product, unit string
+		if err := rows.Scan(&product, &unit); err != nil {
+			return nil, err
+		}
+		if _, found := nvUnits[product]; !found {
+			nvUnits[product] = make([]string, 0, 1)
+		}
+		if unit == "" {
+			continue
+		}
+		nvUnits[product] = append(nvUnits[product], unit)
+	}
+	return nvUnits, nil
+}
+
 func (n *NutritionalValueRepo) UpdateProductNutritionalValue(ctx context.Context, pnv model.ProductNutritionalValue) error {
 	query := `
 	UPDATE nutritional_values 

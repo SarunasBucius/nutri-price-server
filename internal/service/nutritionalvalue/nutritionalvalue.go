@@ -24,6 +24,7 @@ type INutritionalValueRepository interface {
 	GetProductNutritionalValue(ctx context.Context, nutritionalValueID int) (model.ProductNutritionalValue, error)
 	UpdateProductNutritionalValue(ctx context.Context, productNV model.ProductNutritionalValue) error
 	DeleteProductNutritionalValue(ctx context.Context, id int) error
+	GetNutritionalValuesUnits(ctx context.Context) (map[string][]string, error)
 }
 
 func (s *Service) InsertNutritionalValue(ctx context.Context, pnv model.ProductNutritionalValueNew) error {
@@ -47,6 +48,19 @@ func (s *Service) GetProductsNutritionalValue(ctx context.Context, products []st
 	}
 
 	return productsNVByName, nil
+}
+
+func (s *Service) GetNutritionalValuesUnits(ctx context.Context) ([]model.NutritionalValueUnits, error) {
+	nvUnitsByProduct, err := s.NutritionalValueRepo.GetNutritionalValuesUnits(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("get nutritional values units: %w", err)
+	}
+
+	nvUnits := make([]model.NutritionalValueUnits, 0, len(nvUnitsByProduct))
+	for product, units := range nvUnitsByProduct {
+		nvUnits = append(nvUnits, model.NutritionalValueUnits{Product: product, Units: units})
+	}
+	return nvUnits, nil
 }
 
 func (s *Service) GetProductNutritionalValue(ctx context.Context, nvID int) (model.ProductNutritionalValue, error) {

@@ -26,6 +26,7 @@ type INutritionalValueService interface {
 	GetProductNutritionalValue(ctx context.Context, nvID int) (model.ProductNutritionalValue, error)
 	UpdateProductNutritionalValue(ctx context.Context, productNV model.ProductNutritionalValue) error
 	DeleteProductNutritionalValue(ctx context.Context, nvID int) error
+	GetNutritionalValuesUnits(ctx context.Context) ([]model.NutritionalValueUnits, error)
 }
 
 func (n *NutritionalValueAPI) InsertNutritionalValues(w http.ResponseWriter, r *http.Request) {
@@ -58,6 +59,16 @@ func (n *NutritionalValueAPI) GetNutritionalValues(w http.ResponseWriter, r *htt
 	}
 
 	successResponse(r.Context(), w, map[string]any{"nutritionalValues": emptyIfNil(nutritionalValues)})
+}
+
+func (n *NutritionalValueAPI) GetNutritionalValuesUnits(w http.ResponseWriter, r *http.Request) {
+	nvUnits, err := n.Service.GetNutritionalValuesUnits(r.Context())
+	if err != nil {
+		errorResponse(r.Context(), w, err)
+		return
+	}
+
+	successResponse(r.Context(), w, map[string]any{"filledProducts": emptyIfNil(nvUnits)})
 }
 
 func (n *NutritionalValueAPI) GetNutritionalValue(w http.ResponseWriter, r *http.Request) {

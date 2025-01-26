@@ -25,3 +25,8 @@ type ProductNutritionalValue struct {
 	Unit             Unit             `json:"unit"`
 	NutritionalValue NutritionalValue `json:"nutritionalValue"`
 }
+
+type NutritionalValueUnits struct {
+	Product string   `json:"product"`
+	Units   []string `json:"units"`
+}
