@@ -68,7 +68,7 @@ func (n *NutritionalValueAPI) GetNutritionalValuesUnits(w http.ResponseWriter, r
 		return
 	}
 
-	successResponse(r.Context(), w, map[string]any{"filledProducts": emptyIfNil(nvUnits)})
+	successResponse(r.Context(), w, map[string]any{"products": emptyIfNil(nvUnits)})
 }
 
 func (n *NutritionalValueAPI) GetNutritionalValue(w http.ResponseWriter, r *http.Request) {
