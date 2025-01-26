@@ -25,14 +25,6 @@ func NewParser(receiptLines []string) BarboraParser {
 	}
 }
 
-type unparsedProduct struct {
-	product       string
-	hasDeposit    bool
-	discount      string
-	isHalf        bool
-	dynamicWeight []string
-}
-
 func (p BarboraParser) ParseDate() (time.Time, error) {
 	const datePosition = 1
 	if len(p.ReceiptLines) < 2 {
@@ -63,6 +55,11 @@ func (p BarboraParser) ParseProducts() (model.ReceiptProducts, error) {
 
 	parsedProducts := make([]model.PurchasedProductNew, 0, len(unparsedProducts))
 	for _, product := range unparsedProducts {
+		if isDeposit(product) {
+			parsedProducts[len(parsedProducts)-1].Price.Paid += 0.1
+			parsedProducts[len(parsedProducts)-1].Price.Full += 0.1
+			continue
+		}
 		parsedProduct, err := parseProduct(product, discountsByProduct)
 		if err != nil {
 			return nil, fmt.Errorf("parse product %+v: %w", product, err)
@@ -74,10 +71,10 @@ func (p BarboraParser) ParseProducts() (model.ReceiptProducts, error) {
 
 func (p BarboraParser) GetRetailer() string { return retailer }
 
-func parseProduct(product unparsedProduct, discountsByProduct map[string]string) (model.PurchasedProductNew, error) {
-	productSplitBySpace := strings.Split(product.product, " ")
+func parseProduct(product string, discountsByProduct map[string]string) (model.PurchasedProductNew, error) {
+	productSplitBySpace := strings.Split(product, " ")
 	if len(productSplitBySpace) < 9 {
-		return model.PurchasedProductNew{}, fmt.Errorf("unexpected product line: %s", product)
+		return model.PurchasedProductNew{}, fmt.Errorf("unexpected product line: %v", product)
 	}
 
 	productName := strings.Join(productSplitBySpace[1:len(productSplitBySpace)-7], " ")
@@ -96,12 +93,12 @@ func parseProduct(product unparsedProduct, discountsByProduct map[string]string)
 	}
 
 	return model.PurchasedProductNew{
-			Name:     productName,
-			Price:    price,
-			Quantity: quantity,
-			// Group and notes will be filled from DB later.
-			Group: "",
-			Notes: "",
+		Name:     productName,
+		Price:    price,
+		Quantity: quantity,
+		// Group and notes will be filled from DB later.
+		Group: "",
+		Notes: "",
 	}, nil
 }
 
@@ -154,7 +151,7 @@ func parseDiscount(discountLine string) (float64, error) {
 	return ustrconv.StringToPositiveFloat(discount)
 }
 
-func extractProductLines(receiptLines []string) ([]unparsedProduct, error) {
+func extractProductLines(receiptLines []string) ([]string, error) {
 	const productsEndSeparator = "Pritaikytos nuolaidos"
 	const productsListStart = 2
 	if len(receiptLines) <= productsListStart {
@@ -162,7 +159,7 @@ func extractProductLines(receiptLines []string) ([]unparsedProduct, error) {
 	}
 	receiptLines = receiptLines[productsListStart:]
 
-	var products []unparsedProduct
+	var products []string
 	for i := range receiptLines {
 		if strings.HasPrefix(receiptLines[i], productsEndSeparator) {
 			break
@@ -215,18 +212,22 @@ func getDiscountsByProduct(discountedProducts []string) (map[string]string, erro
 	return discountsByProduct, nil
 }
 
-func extractProduct(line string, products []unparsedProduct) []unparsedProduct {
+func extractProduct(line string, products []string) []string {
 	if len(products) == 0 {
-		return append(products, unparsedProduct{product: line})
+		return append(products, line)
 	}
 
 	productsNum := len(products)
 
 	if strings.HasPrefix(line, strconv.Itoa(productsNum+1)) {
-		return append(products, unparsedProduct{product: line})
+		return append(products, line)
 	}
 
-	products[productsNum-1].product += " " + line
+	products[productsNum-1] += " " + line
 
 	return products
+}
+
+func isDeposit(product string) bool {
+	return strings.Contains(product, "(depozitinis)")
 }
