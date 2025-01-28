@@ -38,21 +38,15 @@ func calculateIngredientNutritionalValue(ingredient model.Ingredient, productsNu
 		if productNV.Product != ingredient.Product {
 			continue
 		}
-		if productNV.Unit == ingredient.NormalizedQuantity.Unit {
+		if productNV.Unit == ingredient.Unit {
 			isPiece := productNV.Unit == model.Pieces
 			return model.CalculatedProductNutritionalValue{
 				Product:          ingredient.Product,
-				NutritionalValue: calculateNutritionalValue(ingredient.NormalizedQuantity.Amount, productNV.NutritionalValue, isPiece),
-			}
-		}
-		if productNV.Unit == ingredient.RecipeQuantity.Unit {
-			isPiece := productNV.Unit == model.Pieces
-			return model.CalculatedProductNutritionalValue{
-				Product:          ingredient.Product,
-				NutritionalValue: calculateNutritionalValue(ingredient.RecipeQuantity.Amount, productNV.NutritionalValue, isPiece),
+				NutritionalValue: calculateNutritionalValue(ingredient.Amount, productNV.NutritionalValue, isPiece),
 			}
 		}
 	}
+
 	return model.CalculatedProductNutritionalValue{
 		Product: ingredient.Product,
 		Message: "could not find nutritional value for the product",

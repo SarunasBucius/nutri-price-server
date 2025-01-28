@@ -39,17 +39,8 @@ func calculateIngredientPrice(ingredient model.Ingredient, purchasedProducts []m
 			continue
 		}
 
-		if product.Quantity.Unit == ingredient.NormalizedQuantity.Unit {
-			unroundedProductPrice := product.Price.Paid / product.Quantity.Amount * ingredient.NormalizedQuantity.Amount
-			productPrice := umath.RoundFloat(unroundedProductPrice, 2)
-			return model.CalculatedProductPrice{
-				Product: ingredient.Product,
-				Price:   productPrice,
-			}
-		}
-
-		if product.Quantity.Unit == ingredient.RecipeQuantity.Unit {
-			unroundedProductPrice := product.Price.Paid / product.Quantity.Amount * ingredient.RecipeQuantity.Amount
+		if product.Quantity.Unit == ingredient.Unit {
+			unroundedProductPrice := product.Price.Paid / product.Quantity.Amount * ingredient.Amount
 			productPrice := umath.RoundFloat(unroundedProductPrice, 2)
 			return model.CalculatedProductPrice{
 				Product: ingredient.Product,

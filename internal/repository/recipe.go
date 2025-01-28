@@ -48,16 +48,13 @@ func insertIngredients(ctx context.Context, tx pgx.Tx, recipeID int, ingredients
 	rows := make([][]interface{}, 0, len(ingredients))
 	for _, ingredient := range ingredients {
 		row := []interface{}{
-			recipeID, ingredient.Product,
-			ingredient.RecipeQuantity.Unit, ingredient.RecipeQuantity.Amount,
-			ingredient.NormalizedQuantity.Unit, ingredient.NormalizedQuantity.Amount,
-			ingredient.CutStyle}
+			recipeID, ingredient.Product, ingredient.Unit, ingredient.Amount, ingredient.Notes}
 		rows = append(rows, row)
 	}
 
 	_, err := tx.CopyFrom(ctx,
 		pgx.Identifier{"recipe_ingredients"},
-		[]string{"recipe_id", "product_name", "measurement_unit", "quantity", "metric_measurement_unit", "metric_quantity", "cut_style"},
+		[]string{"recipe_id", "product_name", "unit", "amount", "notes"},
 		pgx.CopyFromRows(rows),
 	)
 
@@ -110,7 +107,7 @@ func (r *RecipeRepo) GetRecipe(ctx context.Context, recipeID int) (model.Recipe,
 
 func (r *RecipeRepo) getRecipeIngredients(ctx context.Context, recipeID int) ([]model.Ingredient, error) {
 	query := `
-	SELECT id, recipe_id, product_name, measurement_unit, quantity, metric_measurement_unit, metric_quantity, cut_style 
+	SELECT id, recipe_id, product_name, unit, amount, notes 
 	FROM recipe_ingredients 
 	WHERE recipe_id = $1`
 
@@ -124,9 +121,7 @@ func (r *RecipeRepo) getRecipeIngredients(ctx context.Context, recipeID int) ([]
 	for rows.Next() {
 		var i model.Ingredient
 		if err := rows.Scan(&i.ID, &i.RecipeID, &i.Product,
-			&i.RecipeQuantity.Unit, &i.RecipeQuantity.Amount,
-			&i.NormalizedQuantity.Unit, &i.NormalizedQuantity.Amount,
-			&i.CutStyle); err != nil {
+			&i.Unit, &i.Amount, &i.Notes); err != nil {
 			return nil, err
 		}
 		ingredients = append(ingredients, i)
@@ -197,7 +192,7 @@ func (r *RecipeRepo) DeleteRecipe(ctx context.Context, recipeID int) error {
 
 func (r *RecipeRepo) GetRecipesIngredients(ctx context.Context, recipeIDs []int) (model.Ingredients, error) {
 	query := `
-	SELECT id, recipe_id, product_name, measurement_unit, quantity, metric_measurement_unit, metric_quantity, cut_style 
+	SELECT id, recipe_id, product_name, unit, amount, notes 
 	FROM recipe_ingredients 
 	WHERE recipe_id = ANY($1)`
 
@@ -211,9 +206,8 @@ func (r *RecipeRepo) GetRecipesIngredients(ctx context.Context, recipeIDs []int)
 	for rows.Next() {
 		var i model.Ingredient
 		if err := rows.Scan(&i.ID, &i.RecipeID, &i.Product,
-			&i.RecipeQuantity.Unit, &i.RecipeQuantity.Amount,
-			&i.NormalizedQuantity.Unit, &i.NormalizedQuantity.Amount,
-			&i.CutStyle); err != nil {
+			&i.Unit, &i.Amount,
+			&i.Notes); err != nil {
 			return nil, err
 		}
 		ingredients = append(ingredients, i)
