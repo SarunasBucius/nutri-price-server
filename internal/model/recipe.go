@@ -7,7 +7,7 @@ type RecipeNew struct {
 	Ingredients  []IngredientNew `json:"ingredients"`
 	Steps        []string        `json:"steps"`
 	Notes        string          `json:"notes"`
-	DishMadeDate *time.Time      `json:"dishMadeDate,omitempty"`
+	DishMadeDate *string         `json:"dishMadeDate,omitempty"`
 }
 
 type IngredientNew struct {

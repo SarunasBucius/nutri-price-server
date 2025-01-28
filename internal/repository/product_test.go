@@ -163,7 +163,7 @@ func (s *ProductTestSuite) TestProductRepo_GetProductGroups() {
 					pgx.Identifier{"purchased_products"},
 					[]string{"product_name", "retailer", "product_group", "measurement_unit", "quantity", "full_price", "paid_price", "discount", "notes", "purchase_date"},
 					pgx.CopyFromRows([][]interface{}{
-						{"red apples", "norfa", "apples", "pieces", "1", 1, 0.90, 0.1, "", time.Date(2024, 10, 14, 0, 0, 0, 0, time.UTC)},
+						{"red apples", "norfa", "apples", "pieces", "1", 1, 0.90, 0.1, "", "2024-10-14"},
 					}),
 				)
 				s.Require().NoError(err)
