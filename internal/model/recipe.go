@@ -54,6 +54,11 @@ func (ingredients Ingredients) GetProductNames() []string {
 	return productNames
 }
 
+type RecipeIDAndName struct {
+	ID   int    `json:"id"`
+	Name string `json:"name"`
+}
+
 type CalculatedMealNutritionalValue struct {
 	NutritionalValue  NutritionalValue                   `json:"nutritionalValue"`
 	CalculatedRecipes []CalculatedRecipeNutritionalValue `json:"calculatedRecipes"`

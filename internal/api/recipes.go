@@ -22,7 +22,7 @@ func NewRecipeAPI(recipeService IRecipeService) *RecipeAPI {
 
 type IRecipeService interface {
 	InsertRecipe(ctx context.Context, recipe model.RecipeNew) error
-	GetRecipesNames(ctx context.Context) ([]string, error)
+	GetRecipesNames(ctx context.Context) ([]model.RecipeIDAndName, error)
 	GetRecipe(ctx context.Context, recipeID int) (model.Recipe, error)
 	UpdateRecipe(ctx context.Context, recipe model.RecipeUpdate) error
 	GetMealPrice(ctx context.Context, recipeIDs []int) (model.CalculatedMealPrice, error)

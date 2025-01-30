@@ -61,8 +61,8 @@ func insertIngredients(ctx context.Context, tx pgx.Tx, recipeID int, ingredients
 	return err
 }
 
-func (r *RecipeRepo) GetRecipesNames(ctx context.Context) ([]string, error) {
-	query := `SELECT recipe_name FROM recipes`
+func (r *RecipeRepo) GetRecipesNames(ctx context.Context) ([]model.RecipeIDAndName, error) {
+	query := `SELECT id, recipe_name FROM recipes`
 
 	rows, err := r.DB.Query(ctx, query)
 	if err != nil {
@@ -70,13 +70,14 @@ func (r *RecipeRepo) GetRecipesNames(ctx context.Context) ([]string, error) {
 	}
 	defer rows.Close()
 
-	var recipeNames []string
+	var recipeNames []model.RecipeIDAndName
 	for rows.Next() {
+		var recipeID int
 		var recipeName string
-		if err := rows.Scan(&recipeName); err != nil {
+		if err := rows.Scan(&recipeID, &recipeName); err != nil {
 			return nil, err
 		}
-		recipeNames = append(recipeNames, recipeName)
+		recipeNames = append(recipeNames, model.RecipeIDAndName{ID: recipeID, Name: recipeName})
 	}
 	return recipeNames, nil
 }
@@ -93,12 +94,12 @@ func (r *RecipeRepo) GetRecipe(ctx context.Context, recipeID int) (model.Recipe,
 		return model.Recipe{}, uerror.NewNotFound("nutritional value not found", err)
 	}
 	if err != nil {
-		return model.Recipe{}, err
+		return model.Recipe{}, fmt.Errorf("query recipe: %w", err)
 	}
 
 	ingredients, err := r.getRecipeIngredients(ctx, recipeID)
 	if err != nil {
-		return model.Recipe{}, err
+		return model.Recipe{}, fmt.Errorf("get recipe ingredients: %w", err)
 	}
 	recipe.Ingredients = ingredients
 
