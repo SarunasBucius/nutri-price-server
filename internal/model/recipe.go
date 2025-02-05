@@ -70,7 +70,7 @@ func (ingredients Ingredients) ToNewIngredients() []IngredientNew {
 type RecipeSummary struct {
 	ID           int      `json:"id"`
 	Name         string   `json:"name"`
-	Steps        []string `json:"steps"`
+	Steps        []string `json:"steps,omitempty"`
 	Notes        string   `json:"notes"`
 	DishMadeDate string   `json:"dishMadeDate,omitempty"`
 }
