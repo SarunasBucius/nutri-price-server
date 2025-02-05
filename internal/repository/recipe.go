@@ -9,6 +9,7 @@ import (
 	"github.com/SarunasBucius/nutri-price-server/internal/model"
 	"github.com/SarunasBucius/nutri-price-server/internal/utils/uerror"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -61,8 +62,8 @@ func insertIngredients(ctx context.Context, tx pgx.Tx, recipeID int, ingredients
 	return err
 }
 
-func (r *RecipeRepo) GetRecipesNames(ctx context.Context) ([]model.RecipeIDAndName, error) {
-	query := `SELECT id, recipe_name FROM recipes`
+func (r *RecipeRepo) GetRecipeSummaries(ctx context.Context) ([]model.RecipeSummary, error) {
+	query := `SELECT id, recipe_name, steps, notes, dish_made_date FROM recipes ORDER BY dish_made_date DESC NULLS LAST`
 
 	rows, err := r.DB.Query(ctx, query)
 	if err != nil {
@@ -70,16 +71,19 @@ func (r *RecipeRepo) GetRecipesNames(ctx context.Context) ([]model.RecipeIDAndNa
 	}
 	defer rows.Close()
 
-	var recipeNames []model.RecipeIDAndName
+	var recipeSummaries []model.RecipeSummary
 	for rows.Next() {
-		var recipeID int
-		var recipeName string
-		if err := rows.Scan(&recipeID, &recipeName); err != nil {
+		var rs model.RecipeSummary
+		var dishMadeDate *pgtype.Date
+		if err := rows.Scan(&rs.ID, &rs.Name, &rs.Steps, &rs.Notes, &dishMadeDate); err != nil {
 			return nil, err
 		}
-		recipeNames = append(recipeNames, model.RecipeIDAndName{ID: recipeID, Name: recipeName})
+		if dishMadeDate != nil {
+			rs.DishMadeDate = dishMadeDate.Time.Format(time.DateOnly)
+		}
+		recipeSummaries = append(recipeSummaries, rs)
 	}
-	return recipeNames, nil
+	return recipeSummaries, nil
 }
 
 func (r *RecipeRepo) GetRecipe(ctx context.Context, recipeID int) (model.Recipe, error) {

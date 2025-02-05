@@ -30,7 +30,7 @@ func LoadRouter(conf Config) *chi.Mux {
 	r.Delete("/nutritional-values/{nutritionalValueID}", h.nv.DeleteNutritionalValues)
 
 	r.Post("/recipes", h.recipes.InsertRecipe)
-	r.Get("/recipes/names", h.recipes.GetRecipeNames)
+	r.Get("/recipes/summary", h.recipes.GetRecipeSummaries)
 	r.Get("/recipes/{recipeID}", h.recipes.GetRecipe)
 	r.Put("/recipes/{recipeID}", h.recipes.UpdateRecipe)
 	r.Get("/recipes/{recipeIDs}/meal-nutritional-value", h.recipes.GetMealNutritionalValue)

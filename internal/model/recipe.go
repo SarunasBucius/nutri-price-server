@@ -54,9 +54,12 @@ func (ingredients Ingredients) GetProductNames() []string {
 	return productNames
 }
 
-type RecipeIDAndName struct {
-	ID   int    `json:"id"`
-	Name string `json:"name"`
+type RecipeSummary struct {
+	ID           int      `json:"id"`
+	Name         string   `json:"name"`
+	Steps        []string `json:"steps"`
+	Notes        string   `json:"notes"`
+	DishMadeDate string   `json:"dishMadeDate,omitempty"`
 }
 
 type CalculatedMealNutritionalValue struct {

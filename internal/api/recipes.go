@@ -22,7 +22,7 @@ func NewRecipeAPI(recipeService IRecipeService) *RecipeAPI {
 
 type IRecipeService interface {
 	InsertRecipe(ctx context.Context, recipe model.RecipeNew) error
-	GetRecipesNames(ctx context.Context) ([]model.RecipeIDAndName, error)
+	GetRecipeSummaries(ctx context.Context) ([]model.RecipeSummary, error)
 	GetRecipe(ctx context.Context, recipeID int) (model.Recipe, error)
 	UpdateRecipe(ctx context.Context, recipe model.RecipeUpdate) error
 	GetMealPrice(ctx context.Context, recipeIDs []int) (model.CalculatedMealPrice, error)
@@ -47,14 +47,14 @@ func (rc *RecipeAPI) InsertRecipe(w http.ResponseWriter, r *http.Request) {
 	successResponse(r.Context(), w, newSuccessMessage("successfully inserted recipe"))
 }
 
-func (rc *RecipeAPI) GetRecipeNames(w http.ResponseWriter, r *http.Request) {
-	recipeNames, err := rc.Service.GetRecipesNames(r.Context())
+func (rc *RecipeAPI) GetRecipeSummaries(w http.ResponseWriter, r *http.Request) {
+	recipeNames, err := rc.Service.GetRecipeSummaries(r.Context())
 	if err != nil {
 		errorResponse(r.Context(), w, err)
 		return
 	}
 
-	successResponse(r.Context(), w, map[string]any{"recipeNames": emptyIfNil(recipeNames)})
+	successResponse(r.Context(), w, emptyIfNil(recipeNames))
 }
 
 func (rc *RecipeAPI) GetRecipe(w http.ResponseWriter, r *http.Request) {
