@@ -30,6 +30,7 @@ type IRecipeService interface {
 	DeleteRecipe(ctx context.Context, recipeID int) error
 	GetMealPriceByDate(ctx context.Context, date time.Time) (model.CalculatedMealPrice, error)
 	GetMealNutritionalValueByDate(ctx context.Context, date time.Time) (model.CalculatedMealNutritionalValue, error)
+	CloneRecipes(ctx context.Context, recipeIDs []int, date string) error
 }
 
 func (rc *RecipeAPI) InsertRecipe(w http.ResponseWriter, r *http.Request) {
@@ -184,4 +185,19 @@ func (rc *RecipeAPI) DeleteRecipe(w http.ResponseWriter, r *http.Request) {
 	}
 
 	successResponse(r.Context(), w, newSuccessMessage("successfully deleted recipe"))
+}
+
+func (rc *RecipeAPI) CloneRecipes(w http.ResponseWriter, r *http.Request) {
+	var cloneRecipesReq model.CloneRecipesRequest
+	if err := json.NewDecoder(r.Body).Decode(&cloneRecipesReq); err != nil {
+		errorResponse(r.Context(), w, uerror.NewBadRequest("invalid request body", err))
+		return
+	}
+
+	if err := rc.Service.CloneRecipes(r.Context(), cloneRecipesReq.RecipeIDs, cloneRecipesReq.Date); err != nil {
+		errorResponse(r.Context(), w, err)
+		return
+	}
+
+	successResponse(r.Context(), w, newSuccessMessage("successfully cloned recipes"))
 }

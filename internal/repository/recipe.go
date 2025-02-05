@@ -244,3 +244,37 @@ func (r *RecipeRepo) GetRecipeIDsByDate(ctx context.Context, date time.Time) ([]
 
 	return recipeIDs, nil
 }
+
+func (r *RecipeRepo) CloneRecipes(ctx context.Context, recipeIDs []int, date string, ingredientsByRecipeID map[int]model.Ingredients) error {
+	tx, err := r.DB.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback(ctx)
+
+	for _, recipeID := range recipeIDs {
+		id, err := cloneRecipe(ctx, tx, recipeID, date)
+		if err != nil {
+			return fmt.Errorf("clone recipe: %w", err)
+		}
+		if err := insertIngredients(ctx, tx, id, ingredientsByRecipeID[recipeID].ToNewIngredients()); err != nil {
+			return fmt.Errorf("insert ingredients: %w", err)
+		}
+	}
+
+	return tx.Commit(ctx)
+}
+
+func cloneRecipe(ctx context.Context, tx pgx.Tx, recipeID int, date string) (int, error) {
+	query := `INSERT INTO recipes (recipe_name, steps, notes, dish_made_date)
+SELECT recipe_name, steps, notes, $1
+FROM recipes
+WHERE id = $2 RETURNING id;
+`
+	var id int
+	if err := tx.QueryRow(ctx, query, date, recipeID).Scan(&id); err != nil {
+		return 0, err
+	}
+	return id, nil
+
+}

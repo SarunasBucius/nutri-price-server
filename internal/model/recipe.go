@@ -54,6 +54,19 @@ func (ingredients Ingredients) GetProductNames() []string {
 	return productNames
 }
 
+func (ingredients Ingredients) ToNewIngredients() []IngredientNew {
+	newIngredients := make([]IngredientNew, 0, len(ingredients))
+	for _, ingredient := range ingredients {
+		newIngredients = append(newIngredients, IngredientNew{
+			Product: ingredient.Product,
+			Unit:    ingredient.Unit,
+			Amount:  ingredient.Amount,
+			Notes:   ingredient.Notes,
+		})
+	}
+	return newIngredients
+}
+
 type RecipeSummary struct {
 	ID           int      `json:"id"`
 	Name         string   `json:"name"`
@@ -96,4 +109,9 @@ type CalculatedProductPrice struct {
 	Product string  `json:"product"`
 	Message string  `json:"message"`
 	Price   float64 `json:"price"`
+}
+
+type CloneRecipesRequest struct {
+	RecipeIDs []int  `json:"recipeIds"`
+	Date      string `json:"date"`
 }

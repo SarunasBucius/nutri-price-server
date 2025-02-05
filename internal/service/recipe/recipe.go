@@ -34,6 +34,7 @@ type IRecipeRepository interface {
 	DeleteRecipe(ctx context.Context, recipeID int) error
 	GetRecipesIngredients(ctx context.Context, recipeIDs []int) (model.Ingredients, error)
 	GetRecipeIDsByDate(ctx context.Context, date time.Time) ([]int, error)
+	CloneRecipes(ctx context.Context, recipeIDs []int, date string, ingredientsByRecipeID map[int]model.Ingredients) error
 }
 
 type IProductRepository interface {
@@ -121,4 +122,21 @@ func (s *Service) GetMealNutritionalValueByDate(ctx context.Context, date time.T
 	}
 
 	return s.GetMealNutritionalValue(ctx, recipeIDs)
+}
+
+func (s *Service) CloneRecipes(ctx context.Context, recipeIDs []int, date string) error {
+	ingredients, err := s.RecipeRepo.GetRecipesIngredients(ctx, recipeIDs)
+	if err != nil {
+		return fmt.Errorf("get recipes ingredients: %w", err)
+	}
+
+	ingredientsByRecipeID := make(map[int]model.Ingredients)
+	for _, ingredient := range ingredients {
+		ingredientsByRecipeID[ingredient.RecipeID] = append(ingredientsByRecipeID[ingredient.RecipeID], ingredient)
+	}
+
+	if err := s.RecipeRepo.CloneRecipes(ctx, recipeIDs, date, ingredientsByRecipeID); err != nil {
+		return fmt.Errorf("clone recipes: %w", err)
+	}
+	return nil
 }
