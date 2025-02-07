@@ -12,7 +12,7 @@ type RecipeNew struct {
 
 type IngredientNew struct {
 	Product string  `json:"product"`
-	Unit    Unit    `json:"unit"`
+	Unit    string  `json:"unit"`
 	Amount  float64 `json:"amount"`
 	Notes   string  `json:"notes"`
 }
@@ -39,7 +39,7 @@ type Ingredient struct {
 	ID       int     `json:"id"`
 	RecipeID int     `json:"recipeId"`
 	Product  string  `json:"product"`
-	Unit     Unit    `json:"unit"`
+	Unit     string  `json:"unit"`
 	Amount   float64 `json:"amount"`
 	Notes    string  `json:"notes"`
 }
