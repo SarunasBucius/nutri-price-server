@@ -24,6 +24,7 @@ func NewRecipeService(productRepo IProductRepository, nutritionalValueRepo INutr
 
 type INutritionalValueRepository interface {
 	GetProductsNutritionalValueByProductNames(ctx context.Context, productNames []string) ([]model.ProductNutritionalValue, error)
+	InsertEmptyProducts(ctx context.Context, products []string) error
 }
 
 type IRecipeRepository interface {
@@ -42,6 +43,10 @@ type IProductRepository interface {
 }
 
 func (s *Service) InsertRecipe(ctx context.Context, recipe model.RecipeNew) error {
+	if err := s.insertEmptyProducts(ctx, recipe.Ingredients); err != nil {
+		return err
+	}
+
 	if err := s.RecipeRepo.InsertRecipe(ctx, recipe); err != nil {
 		return fmt.Errorf("insert recipe: %w", err)
 	}
@@ -65,6 +70,10 @@ func (s *Service) GetRecipe(ctx context.Context, recipeID int) (model.Recipe, er
 }
 
 func (s *Service) UpdateRecipe(ctx context.Context, recipe model.RecipeUpdate) error {
+	if err := s.insertEmptyProducts(ctx, recipe.Ingredients); err != nil {
+		return err
+	}
+
 	if err := s.RecipeRepo.UpdateRecipe(ctx, recipe); err != nil {
 		return fmt.Errorf("update recipe: %w", err)
 	}
@@ -137,6 +146,18 @@ func (s *Service) CloneRecipes(ctx context.Context, recipeIDs []int, date string
 
 	if err := s.RecipeRepo.CloneRecipes(ctx, recipeIDs, date, ingredientsByRecipeID); err != nil {
 		return fmt.Errorf("clone recipes: %w", err)
+	}
+	return nil
+}
+
+func (s *Service) insertEmptyProducts(ctx context.Context, ingredients []model.IngredientNew) error {
+	ingredientNames := make([]string, 0, len(ingredients))
+	for _, ingredient := range ingredients {
+		ingredientNames = append(ingredientNames, ingredient.Product)
+	}
+
+	if err := s.NutritionalValueRepo.InsertEmptyProducts(ctx, ingredientNames); err != nil {
+		return fmt.Errorf("insert empty products: %w", err)
 	}
 	return nil
 }

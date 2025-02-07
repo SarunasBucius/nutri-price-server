@@ -187,3 +187,55 @@ func (n *NutritionalValueRepo) DeleteProductNutritionalValue(ctx context.Context
 	}
 	return nil
 }
+
+func (n *NutritionalValueRepo) InsertEmptyProducts(ctx context.Context, products []string) error {
+	existingProducts, err := n.getExistingProducts(ctx, products)
+	if err != nil {
+		return fmt.Errorf("get existing products: %w", err)
+	}
+
+	newProducts := make([]string, 0, len(products))
+	for _, product := range products {
+		if _, found := existingProducts[product]; !found {
+			newProducts = append(newProducts, product)
+		}
+	}
+
+	rows := make([][]interface{}, 0, len(newProducts))
+	for _, product := range newProducts {
+		row := []interface{}{product}
+		rows = append(rows, row)
+	}
+
+	_, err = n.DB.CopyFrom(ctx,
+		pgx.Identifier{"nutritional_values"},
+		[]string{"product"},
+		pgx.CopyFromRows(rows),
+	)
+
+	return err
+}
+
+func (n *NutritionalValueRepo) getExistingProducts(ctx context.Context, products []string) (map[string]struct{}, error) {
+	query := `
+	SELECT 
+		product
+	FROM nutritional_values
+	WHERE product = ANY($1)`
+
+	rows, err := n.DB.Query(ctx, query, products)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	existingProducts := make(map[string]struct{})
+	for rows.Next() {
+		var product string
+		if err := rows.Scan(&product); err != nil {
+			return nil, err
+		}
+		existingProducts[product] = struct{}{}
+	}
+	return existingProducts, nil
+}

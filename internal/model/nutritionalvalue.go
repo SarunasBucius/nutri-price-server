@@ -22,7 +22,7 @@ type ProductNutritionalValueNew struct {
 type ProductNutritionalValue struct {
 	ID               int              `json:"id"`
 	Product          string           `json:"product"`
-	Unit             Unit             `json:"unit"`
+	Unit             string           `json:"unit"`
 	NutritionalValue NutritionalValue `json:"nutritionalValue"`
 }
 

@@ -28,10 +28,35 @@ type INutritionalValueRepository interface {
 }
 
 func (s *Service) InsertNutritionalValue(ctx context.Context, pnv model.ProductNutritionalValueNew) error {
+	nvs, err := s.NutritionalValueRepo.GetProductsNutritionalValueByProductNames(ctx, []string{pnv.Product})
+	if err != nil {
+		return fmt.Errorf("get products nutritional value by product names: %w", err)
+	}
+	if id, ok := getEmptyNutritionalValueID(nvs); ok {
+		if err := s.NutritionalValueRepo.UpdateProductNutritionalValue(ctx, model.ProductNutritionalValue{
+			ID:               id,
+			Product:          pnv.Product,
+			Unit:             pnv.Unit,
+			NutritionalValue: pnv.NutritionalValue,
+		}); err != nil {
+			return fmt.Errorf("update product nutritional value: %w", err)
+		}
+		return nil
+	}
+
 	if err := s.NutritionalValueRepo.InsertProductNutritionalValue(ctx, pnv.Product, pnv.Unit, pnv.NutritionalValue); err != nil {
 		return fmt.Errorf("insert product nutritional value: %w", err)
 	}
 	return nil
+}
+
+func getEmptyNutritionalValueID(nvs []model.ProductNutritionalValue) (int, bool) {
+	for _, nv := range nvs {
+		if nv.Unit == "" {
+			return nv.ID, true
+		}
+	}
+	return 0, false
 }
 
 func (s *Service) GetProductsNutritionalValue(ctx context.Context, products []string) ([]model.ProductNutritionalValue, error) {
