@@ -21,7 +21,7 @@ type Recipe struct {
 	ID           int          `json:"id"`
 	Name         string       `json:"name"`
 	Ingredients  []Ingredient `json:"ingredients"`
-	Steps        []string     `json:"steps"`
+	Steps        []string     `json:"steps,omitempty"`
 	Notes        string       `json:"notes"`
 	DishMadeDate *time.Time   `json:"dishMadeDate,omitempty"`
 }
