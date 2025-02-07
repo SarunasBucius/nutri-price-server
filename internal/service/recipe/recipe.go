@@ -28,7 +28,7 @@ type INutritionalValueRepository interface {
 
 type IRecipeRepository interface {
 	InsertRecipe(ctx context.Context, recipe model.RecipeNew) error
-	GetRecipeSummaries(ctx context.Context) ([]model.RecipeSummary, error)
+	GetRecipeSummaries(ctx context.Context) (model.RecipeSummaries, error)
 	GetRecipe(ctx context.Context, recipeID int) (model.Recipe, error)
 	UpdateRecipe(ctx context.Context, recipe model.RecipeUpdate) error
 	DeleteRecipe(ctx context.Context, recipeID int) error
@@ -48,10 +48,10 @@ func (s *Service) InsertRecipe(ctx context.Context, recipe model.RecipeNew) erro
 	return nil
 }
 
-func (s *Service) GetRecipeSummaries(ctx context.Context) ([]model.RecipeSummary, error) {
+func (s *Service) GetRecipeSummaries(ctx context.Context) (model.RecipeSummaries, error) {
 	recipesNames, err := s.RecipeRepo.GetRecipeSummaries(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("get recipes names: %w", err)
+		return model.RecipeSummaries{}, fmt.Errorf("get recipes names: %w", err)
 	}
 	return recipesNames, nil
 }

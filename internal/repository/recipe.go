@@ -62,28 +62,34 @@ func insertIngredients(ctx context.Context, tx pgx.Tx, recipeID int, ingredients
 	return err
 }
 
-func (r *RecipeRepo) GetRecipeSummaries(ctx context.Context) ([]model.RecipeSummary, error) {
+func (r *RecipeRepo) GetRecipeSummaries(ctx context.Context) (model.RecipeSummaries, error) {
 	query := `SELECT id, recipe_name, steps, notes, dish_made_date FROM recipes ORDER BY dish_made_date DESC NULLS LAST`
 
 	rows, err := r.DB.Query(ctx, query)
 	if err != nil {
-		return nil, err
+		return model.RecipeSummaries{}, err
 	}
 	defer rows.Close()
 
-	var recipeSummaries []model.RecipeSummary
+	var clonedSummaries []model.RecipeSummary
+	var originalSummaries []model.RecipeSummary
 	for rows.Next() {
 		var rs model.RecipeSummary
 		var dishMadeDate *pgtype.Date
 		if err := rows.Scan(&rs.ID, &rs.Name, &rs.Steps, &rs.Notes, &dishMadeDate); err != nil {
-			return nil, err
+			return model.RecipeSummaries{}, err
 		}
 		if dishMadeDate != nil {
 			rs.DishMadeDate = dishMadeDate.Time.Format(time.DateOnly)
+			clonedSummaries = append(clonedSummaries, rs)
+			continue
 		}
-		recipeSummaries = append(recipeSummaries, rs)
+		originalSummaries = append(originalSummaries, rs)
 	}
-	return recipeSummaries, nil
+	return model.RecipeSummaries{
+		Cloned:   clonedSummaries,
+		Original: originalSummaries,
+	}, nil
 }
 
 func (r *RecipeRepo) GetRecipe(ctx context.Context, recipeID int) (model.Recipe, error) {

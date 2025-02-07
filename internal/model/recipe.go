@@ -75,6 +75,11 @@ type RecipeSummary struct {
 	DishMadeDate string   `json:"dishMadeDate,omitempty"`
 }
 
+type RecipeSummaries struct {
+	Cloned   []RecipeSummary `json:"clonedRecipeSummaries"`
+	Original []RecipeSummary `json:"originalRecipeSummaries"`
+}
+
 type CalculatedMealNutritionalValue struct {
 	NutritionalValue  NutritionalValue                   `json:"nutritionalValue"`
 	CalculatedRecipes []CalculatedRecipeNutritionalValue `json:"calculatedRecipes"`

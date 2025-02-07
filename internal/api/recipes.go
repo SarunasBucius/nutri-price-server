@@ -22,7 +22,7 @@ func NewRecipeAPI(recipeService IRecipeService) *RecipeAPI {
 
 type IRecipeService interface {
 	InsertRecipe(ctx context.Context, recipe model.RecipeNew) error
-	GetRecipeSummaries(ctx context.Context) ([]model.RecipeSummary, error)
+	GetRecipeSummaries(ctx context.Context) (model.RecipeSummaries, error)
 	GetRecipe(ctx context.Context, recipeID int) (model.Recipe, error)
 	UpdateRecipe(ctx context.Context, recipe model.RecipeUpdate) error
 	GetMealPrice(ctx context.Context, recipeIDs []int) (model.CalculatedMealPrice, error)
@@ -54,8 +54,10 @@ func (rc *RecipeAPI) GetRecipeSummaries(w http.ResponseWriter, r *http.Request) 
 		errorResponse(r.Context(), w, err)
 		return
 	}
+	recipeNames.Cloned = emptyIfNil(recipeNames.Cloned)
+	recipeNames.Original = emptyIfNil(recipeNames.Original)
 
-	successResponse(r.Context(), w, emptyIfNil(recipeNames))
+	successResponse(r.Context(), w, recipeNames)
 }
 
 func (rc *RecipeAPI) GetRecipe(w http.ResponseWriter, r *http.Request) {
