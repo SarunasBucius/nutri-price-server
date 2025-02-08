@@ -1,7 +1,5 @@
 package model
 
-import "time"
-
 type RecipeNew struct {
 	Name         string          `json:"name"`
 	Ingredients  []IngredientNew `json:"ingredients"`
@@ -23,7 +21,7 @@ type Recipe struct {
 	Ingredients  []Ingredient `json:"ingredients"`
 	Steps        []string     `json:"steps,omitempty"`
 	Notes        string       `json:"notes"`
-	DishMadeDate *time.Time   `json:"dishMadeDate,omitempty"`
+	DishMadeDate string       `json:"dishMadeDate"`
 }
 
 type RecipeUpdate struct {

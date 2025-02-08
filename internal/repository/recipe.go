@@ -99,12 +99,17 @@ func (r *RecipeRepo) GetRecipe(ctx context.Context, recipeID int) (model.Recipe,
 	WHERE id = $1`
 
 	var recipe model.Recipe
-	err := r.DB.QueryRow(ctx, query, recipeID).Scan(&recipe.ID, &recipe.Name, &recipe.Steps, &recipe.Notes, &recipe.DishMadeDate)
+	var dishMadeDate *pgtype.Date
+	err := r.DB.QueryRow(ctx, query, recipeID).Scan(&recipe.ID, &recipe.Name, &recipe.Steps, &recipe.Notes, &dishMadeDate)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return model.Recipe{}, uerror.NewNotFound("nutritional value not found", err)
 	}
 	if err != nil {
 		return model.Recipe{}, fmt.Errorf("query recipe: %w", err)
+	}
+
+	if dishMadeDate != nil {
+		recipe.DishMadeDate = dishMadeDate.Time.Format(time.DateOnly)
 	}
 
 	ingredients, err := r.getRecipeIngredients(ctx, recipeID)
