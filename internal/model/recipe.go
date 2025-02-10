@@ -52,6 +52,12 @@ func (ingredients Ingredients) GetProductNames() []string {
 	return productNames
 }
 
+func (ingredients Ingredients) MultiplyAmounts(multiplier float64) {
+	for i := range ingredients {
+		ingredients[i].Amount *= multiplier
+	}
+}
+
 func (ingredients Ingredients) ToNewIngredients() []IngredientNew {
 	newIngredients := make([]IngredientNew, 0, len(ingredients))
 	for _, ingredient := range ingredients {
@@ -115,6 +121,11 @@ type CalculatedProductPrice struct {
 }
 
 type CloneRecipesRequest struct {
-	RecipeIDs []int  `json:"recipeIds"`
-	Date      string `json:"date"`
+	RecipeIDs []RecipeIDWithMultiplier `json:"recipeIds"`
+	Date      string                   `json:"date"`
+}
+
+type RecipeIDWithMultiplier struct {
+	RecipeID   int     `json:"recipeId"`
+	Multiplier float64 `json:"multiplier"`
 }

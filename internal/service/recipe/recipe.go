@@ -133,8 +133,13 @@ func (s *Service) GetMealNutritionalValueByDate(ctx context.Context, date time.T
 	return s.GetMealNutritionalValue(ctx, recipeIDs)
 }
 
-func (s *Service) CloneRecipes(ctx context.Context, recipeIDs []int, date string) error {
-	ingredients, err := s.RecipeRepo.GetRecipesIngredients(ctx, recipeIDs)
+func (s *Service) CloneRecipes(ctx context.Context, recipeIDs []model.RecipeIDWithMultiplier, date string) error {
+	var recipeIDsFlat []int
+	for _, recipeID := range recipeIDs {
+		recipeIDsFlat = append(recipeIDsFlat, recipeID.RecipeID)
+	}
+
+	ingredients, err := s.RecipeRepo.GetRecipesIngredients(ctx, recipeIDsFlat)
 	if err != nil {
 		return fmt.Errorf("get recipes ingredients: %w", err)
 	}
@@ -144,7 +149,13 @@ func (s *Service) CloneRecipes(ctx context.Context, recipeIDs []int, date string
 		ingredientsByRecipeID[ingredient.RecipeID] = append(ingredientsByRecipeID[ingredient.RecipeID], ingredient)
 	}
 
-	if err := s.RecipeRepo.CloneRecipes(ctx, recipeIDs, date, ingredientsByRecipeID); err != nil {
+	for _, recipeID := range recipeIDs {
+		if recipeID.Multiplier != 1 && recipeID.Multiplier != 0 {
+			ingredientsByRecipeID[recipeID.RecipeID].MultiplyAmounts(recipeID.Multiplier)
+		}
+	}
+
+	if err := s.RecipeRepo.CloneRecipes(ctx, recipeIDsFlat, date, ingredientsByRecipeID); err != nil {
 		return fmt.Errorf("clone recipes: %w", err)
 	}
 	return nil
