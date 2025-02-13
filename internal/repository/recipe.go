@@ -276,6 +276,30 @@ func (r *RecipeRepo) CloneRecipes(ctx context.Context, recipeIDs []int, date str
 	return tx.Commit(ctx)
 }
 
+func (r *RecipeRepo) GetRecipeNamesByIDs(ctx context.Context, recipeIDs []int) (map[int]string, error) {
+	query := `
+	SELECT id, recipe_name 
+	FROM recipes 
+	WHERE id = ANY($1)`
+
+	rows, err := r.DB.Query(ctx, query, recipeIDs)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	recipeNames := make(map[int]string, len(recipeIDs))
+	for rows.Next() {
+		var id int
+		var name string
+		if err := rows.Scan(&id, &name); err != nil {
+			return nil, err
+		}
+		recipeNames[id] = name
+	}
+	return recipeNames, nil
+}
+
 func cloneRecipe(ctx context.Context, tx pgx.Tx, recipeID int, date string) (int, error) {
 	query := `INSERT INTO recipes (recipe_name, steps, notes, dish_made_date)
 SELECT recipe_name, steps, notes, $1

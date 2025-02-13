@@ -36,6 +36,7 @@ type IRecipeRepository interface {
 	GetRecipesIngredients(ctx context.Context, recipeIDs []int) (model.Ingredients, error)
 	GetRecipeIDsByDate(ctx context.Context, date time.Time) ([]int, error)
 	CloneRecipes(ctx context.Context, recipeIDs []int, date string, ingredientsByRecipeID map[int]model.Ingredients) error
+	GetRecipeNamesByIDs(ctx context.Context, recipeIDs []int) (map[int]string, error)
 }
 
 type IProductRepository interface {
@@ -121,7 +122,12 @@ func (s *Service) GetMealNutritionalValue(ctx context.Context, recipeIDs []int) 
 		return model.CalculatedMealNutritionalValue{}, fmt.Errorf("get products nutritional value: %w", err)
 	}
 
-	return calculateMealNutritionalValue(ingredients, productsNutritionalValue), nil
+	recipeNamesByIDs, err := s.RecipeRepo.GetRecipeNamesByIDs(ctx, recipeIDs)
+	if err != nil {
+		return model.CalculatedMealNutritionalValue{}, fmt.Errorf("get recipe names by IDs: %w", err)
+	}
+
+	return calculateMealNutritionalValue(ingredients, productsNutritionalValue, recipeNamesByIDs), nil
 }
 
 func (s *Service) GetMealNutritionalValueByDate(ctx context.Context, date time.Time) (model.CalculatedMealNutritionalValue, error) {

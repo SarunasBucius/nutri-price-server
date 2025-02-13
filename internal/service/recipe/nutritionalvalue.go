@@ -5,7 +5,7 @@ import (
 	"github.com/SarunasBucius/nutri-price-server/internal/utils/umath"
 )
 
-func calculateMealNutritionalValue(ingredients []model.Ingredient, productsNV []model.ProductNutritionalValue) model.CalculatedMealNutritionalValue {
+func calculateMealNutritionalValue(ingredients []model.Ingredient, productsNV []model.ProductNutritionalValue, recipeNamesByIDs map[int]string) model.CalculatedMealNutritionalValue {
 	calculatedProductsNV := make(map[int][]model.CalculatedProductNutritionalValue, len(ingredients))
 	var totalNV model.NutritionalValue
 	for _, ingredient := range ingredients {
@@ -23,6 +23,7 @@ func calculateMealNutritionalValue(ingredients []model.Ingredient, productsNV []
 
 		calculatedNVByRecipe = append(calculatedNVByRecipe, model.CalculatedRecipeNutritionalValue{
 			RecipeID:           recipeID,
+			RecipeName:         recipeNamesByIDs[recipeID],
 			CalculatedProducts: calculatedProductsNV[recipeID],
 			NutritionalValue:   addNutritionalValues(nvs...),
 		})
