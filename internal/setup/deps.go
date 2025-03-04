@@ -23,7 +23,7 @@ func loadAPIHandlers(conf Config) handlers {
 	recipesRepo := repository.NewRecipeRepo(conf.DBPool)
 
 	receiptService := receipt.NewReceiptService(receiptRepo, productRepo)
-	productService := product.NewProductService(productRepo, receiptRepo)
+	productService := product.NewProductService(productRepo, receiptRepo, nvRepo)
 	nvService := nutritionalvalue.NewNutritionalValueService(nvRepo)
 	recipeService := recipe.NewRecipeService(productRepo, nvRepo, recipesRepo)
 

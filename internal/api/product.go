@@ -27,10 +27,11 @@ type IProductService interface {
 	GetProduct(ctx context.Context, productID int) (model.PurchasedProduct, error)
 	UpdateProduct(ctx context.Context, product model.PurchasedProduct) error
 	DeleteProduct(ctx context.Context, productID int) error
+	ConfirmPurchasedProducts(ctx context.Context, retailer, receiptDate string, products []model.PurchasedProductNew) error
 }
 
 func (p *ProductAPI) InsertProducts(w http.ResponseWriter, r *http.Request) {
-	var purchasedProducts model.PostPurchasedProductsRequest
+	var purchasedProducts model.PurchasedProductsNew
 	if err := json.NewDecoder(r.Body).Decode(&purchasedProducts); err != nil {
 		errorResponse(r.Context(), w, uerror.NewBadRequest("invalid request body", err))
 		return
@@ -128,4 +129,19 @@ func (p *ProductAPI) DeleteProduct(w http.ResponseWriter, r *http.Request) {
 	}
 
 	successResponse(r.Context(), w, newSuccessMessage("successfully deleted product"))
+}
+
+func (p *ProductAPI) ConfirmPurchasedProducts(w http.ResponseWriter, r *http.Request) {
+	var purchasedProducts model.ConfirmPurchasedProductsRequest
+	if err := json.NewDecoder(r.Body).Decode(&purchasedProducts); err != nil {
+		errorResponse(r.Context(), w, uerror.NewBadRequest("invalid request body", err))
+		return
+	}
+
+	if err := p.Service.ConfirmPurchasedProducts(r.Context(), purchasedProducts.Retailer, purchasedProducts.Date, purchasedProducts.Products); err != nil {
+		errorResponse(r.Context(), w, err)
+		return
+	}
+
+	successResponse(r.Context(), w, newSuccessMessage("successfully confirmed products"))
 }

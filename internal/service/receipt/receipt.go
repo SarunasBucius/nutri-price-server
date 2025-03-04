@@ -23,9 +23,12 @@ func NewReceiptService(receiptRepo IReceiptRepository, productRepo IProductRepos
 }
 
 type IReceiptRepository interface {
-	InsertRawReceipt(ctx context.Context, date time.Time, receiptLines string, products model.ReceiptProducts) error
+	InsertRawReceipt(ctx context.Context, date time.Time, receiptLines, retailer string, products model.ReceiptProducts) error
 	GetUnprocessedReceipt(ctx context.Context) (string, error)
 	GetRawReceiptByDate(ctx context.Context, date time.Time) (string, error)
+	GetUnconfirmedReceipt(ctx context.Context, retailer, date string) ([]model.PurchasedProductNew, error)
+	GetUnconfirmedReceiptSummaries(ctx context.Context) ([]model.UnconfirmedReceiptSummary, error)
+	GetProductNameAlias(ctx context.Context, parsedNames []string) (map[string]string, error)
 }
 
 type IProductRepository interface {
@@ -48,14 +51,20 @@ func (s *Service) ProcessReceipt(ctx context.Context, receipt string) (model.Par
 		return model.ParseReceiptFromTextResponse{}, fmt.Errorf("parse products: %w", err)
 	}
 
+	aliasByParsedName, err := s.ReceiptRepo.GetProductNameAlias(ctx, products.GetNames())
+	if err != nil {
+		return model.ParseReceiptFromTextResponse{}, fmt.Errorf("get product name alias: %w", err)
+	}
+
 	productsByName, err := s.ProductRepo.GetDistinctProductsByNames(ctx, products.GetNames())
 	if err != nil {
 		return model.ParseReceiptFromTextResponse{}, fmt.Errorf("find products by names: %w", err)
 	}
 
 	products.FillCategoriesAndNotes(productsByName)
+	products.UpdateProductNames(aliasByParsedName)
 
-	if err := s.ReceiptRepo.InsertRawReceipt(ctx, date, receipt, products); err != nil {
+	if err := s.ReceiptRepo.InsertRawReceipt(ctx, date, receipt, receiptParser.GetRetailer(), products); err != nil {
 		slog.ErrorContext(ctx, "insert raw receipt", "error", err)
 	}
 
@@ -72,6 +81,35 @@ func (s *Service) ProcessReceiptFromDB(ctx context.Context, receiptDate string) 
 		return model.ParseReceiptFromTextResponse{}, fmt.Errorf("get receipt: %w", err)
 	}
 	return s.ProcessReceipt(ctx, receipt)
+}
+
+func (s *Service) GetUnconfirmedReceipt(ctx context.Context, retailer, date string) ([]model.PurchasedProductNew, error) {
+	unconfirmedProducts, err := s.ReceiptRepo.GetUnconfirmedReceipt(ctx, retailer, date)
+	if err != nil {
+		return nil, fmt.Errorf("get unconfirmed receipt: %w", err)
+	}
+	for i := range unconfirmedProducts {
+		// TODO: remove this check when all old receipts are confirmed, new ones should have ParsedName filled
+		if len(unconfirmedProducts[i].ParsedName) != 0 {
+			continue
+		}
+		unconfirmedProducts[i].ParsedName = unconfirmedProducts[i].Name
+	}
+
+	products := model.ReceiptProducts(unconfirmedProducts)
+
+	aliasByParsedName, err := s.ReceiptRepo.GetProductNameAlias(ctx, products.GetNames())
+	if err != nil {
+		return nil, fmt.Errorf("get product name alias: %w", err)
+	}
+
+	products.UpdateProductNames(aliasByParsedName)
+
+	return products, nil
+}
+
+func (s *Service) GetUnconfirmedReceiptSummaries(ctx context.Context) ([]model.UnconfirmedReceiptSummary, error) {
+	return s.ReceiptRepo.GetUnconfirmedReceiptSummaries(ctx)
 }
 
 func (s *Service) getReceipt(ctx context.Context, receiptDate string) (string, error) {

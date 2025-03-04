@@ -3,11 +3,12 @@ package model
 import "time"
 
 type PurchasedProductNew struct {
-	Name     string   `json:"name"`
-	Price    Price    `json:"price"`
-	Quantity Quantity `json:"quantity"`
-	Group    string   `json:"group"`
-	Notes    string   `json:"notes"`
+	Name       string   `json:"name"`
+	Price      Price    `json:"price"`
+	Quantity   Quantity `json:"quantity"`
+	Group      string   `json:"group"`
+	Notes      string   `json:"notes"`
+	ParsedName string   `json:"parsedName"`
 }
 
 type Price struct {
@@ -27,8 +28,19 @@ type PurchasedProduct struct {
 	Notes    string    `json:"notes"`
 }
 
-type PostPurchasedProductsRequest struct {
+type PurchasedProductsNew struct {
 	Date              string                `json:"date"`
 	Retailer          string                `json:"retailer"`
 	PurchasedProducts []PurchasedProductNew `json:"products"`
+}
+
+type UnconfirmedReceiptSummary struct {
+	Retailer string `json:"retailer"`
+	Date     string `json:"date"`
+}
+
+type ConfirmPurchasedProductsRequest struct {
+	Date     string                `json:"date"`
+	Retailer string                `json:"retailer"`
+	Products []PurchasedProductNew `json:"products"`
 }

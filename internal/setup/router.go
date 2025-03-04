@@ -21,6 +21,9 @@ func LoadRouter(conf Config) *chi.Mux {
 	r.Get("/purchased-products/{productID}", h.product.GetProduct)
 	r.Put("/purchased-products/{productID}", h.product.UpdateProduct)
 	r.Delete("/purchased-products/{productID}", h.product.DeleteProduct)
+	r.Get("/purchased-products/unconfirmed-receipts/summary", h.receipt.GetUnconfirmedReceiptSummaries)
+	r.Get("/purchased-products/unconfirmed-receipts/{retailerAndDate}", h.receipt.GetUnconfirmedReceipt)
+	r.Post("/purchased-products/confirm", h.product.ConfirmPurchasedProducts)
 
 	r.Post("/nutritional-values", h.nv.InsertNutritionalValues)
 	r.Get("/nutritional-values", h.nv.GetNutritionalValues)

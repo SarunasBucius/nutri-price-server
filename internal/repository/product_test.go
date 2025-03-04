@@ -6,72 +6,13 @@ import (
 	"time"
 
 	"github.com/SarunasBucius/nutri-price-server/internal/model"
-	"github.com/SarunasBucius/nutri-price-server/migrations"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/stretchr/testify/require"
-	"github.com/stretchr/testify/suite"
 	"github.com/testcontainers/testcontainers-go/modules/postgres"
 )
 
-type ProductTestSuite struct {
-	suite.Suite
-	Container *postgres.PostgresContainer
-}
-
-func (s *ProductTestSuite) SetupSuite() {
-	ctx := context.Background()
-
-	var err error
-	s.Container, err = initPostgresContainer(ctx)
-	s.Require().NoError(err)
-
-	s.createDBSnapshotWithEmptyTables(ctx)
-}
-
-func (s *ProductTestSuite) TearDownSuite() {
-	err := s.Container.Terminate(context.Background())
-	s.Require().NoError(err)
-}
-
-func TestProductTestSuite(t *testing.T) {
-	suite.Run(t, new(ProductTestSuite))
-}
-
-func initPostgresContainer(ctx context.Context) (*postgres.PostgresContainer, error) {
-	dbName := "nutrients"
-	dbUser := "user"
-	dbPassword := "password"
-	ctr, err := postgres.Run(
-		ctx,
-		"docker.io/postgres:16-alpine",
-		postgres.WithDatabase(dbName),
-		postgres.WithUsername(dbUser),
-		postgres.WithPassword(dbPassword),
-		postgres.BasicWaitStrategies(),
-		postgres.WithSQLDriver("pgx"),
-	)
-	return ctr, err
-}
-
-func (s *ProductTestSuite) createDBSnapshotWithEmptyTables(ctx context.Context) {
-	s.migrateDB(ctx)
-
-	err := s.Container.Snapshot(ctx, postgres.WithSnapshotName("emptyTables"))
-	s.Require().NoError(err)
-
-}
-
-func (s *ProductTestSuite) migrateDB(ctx context.Context) {
-	dbPool, err := pgxpool.New(ctx, s.Container.MustConnectionString(ctx))
-	s.Require().NoError(err)
-	defer dbPool.Close()
-
-	err = migrations.MigrateDB(ctx, dbPool)
-	s.Require().NoError(err)
-}
-
-func (s *ProductTestSuite) TestProductRepo_InsertProducts() {
+func (s *ContainerTestSuite) TestProductRepo_InsertProducts() {
 	ctx := context.Background()
 
 	err := s.Container.Restore(ctx, postgres.WithSnapshotName("emptyTables"))
@@ -142,7 +83,7 @@ func (s *ProductTestSuite) TestProductRepo_InsertProducts() {
 	}
 }
 
-func (s *ProductTestSuite) TestProductRepo_GetProductGroups() {
+func (s *ContainerTestSuite) TestProductRepo_GetProductGroups() {
 	ctx := context.Background()
 
 	type args struct {
