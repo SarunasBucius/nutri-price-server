@@ -4,6 +4,7 @@ import (
 	"context"
 	"log/slog"
 	"net/http"
+	"strings"
 
 	"github.com/SarunasBucius/nutri-price-server/internal/setup"
 	"github.com/SarunasBucius/nutri-price-server/migrations"
@@ -27,7 +28,12 @@ func main() {
 
 	slog.InfoContext(ctx, "Listening...", "port", config.Port)
 
-	if err := http.ListenAndServe(config.Port, r); err != nil {
+	port := config.Port
+	if !strings.HasPrefix(port, ":") {
+		port = ":" + port
+	}
+
+	if err := http.ListenAndServe(port, r); err != nil {
 		slog.Error("listen and serve", "error", err)
 		return
 	}
