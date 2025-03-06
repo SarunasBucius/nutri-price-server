@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"net/http"
 	"strconv"
-	"strings"
 
 	"github.com/SarunasBucius/nutri-price-server/internal/model"
 	"github.com/SarunasBucius/nutri-price-server/internal/utils/uerror"
@@ -45,12 +44,7 @@ func (n *NutritionalValueAPI) InsertNutritionalValues(w http.ResponseWriter, r *
 }
 
 func (n *NutritionalValueAPI) GetNutritionalValues(w http.ResponseWriter, r *http.Request) {
-	productNamesQuery := r.URL.Query().Get("productNames")
-
-	var productNames []string
-	if len(productNamesQuery) != 0 {
-		productNames = strings.Split(productNamesQuery, ",")
-	}
+	productNames := r.URL.Query()["productNames"]
 
 	nutritionalValues, err := n.Service.GetProductsNutritionalValue(r.Context(), productNames)
 	if err != nil {
