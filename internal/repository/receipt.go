@@ -99,9 +99,11 @@ func (r *ReceiptRepo) GetRawReceiptByDate(ctx context.Context, date time.Time) (
 func (r *ReceiptRepo) UpdateProductNameAlias(ctx context.Context, editedNameByParsedName map[string]string) error {
 	batch := &pgx.Batch{}
 	for parsedName, editedName := range editedNameByParsedName {
-		batch.Queue(`UPDATE purchased_products_aliases
-	SET user_defined_product_name = $1
-	WHERE parsed_product_name = $2`, editedName, parsedName)
+		batch.Queue(`
+		INSERT INTO purchased_products_aliases 
+		(user_defined_product_name, parsed_product_name) VALUES ($1, $2) 
+		ON CONFLICT (parsed_product_name) DO UPDATE
+		SET user_defined_product_name = EXCLUDED.user_defined_product_name`, editedName, parsedName)
 	}
 	br := r.DB.SendBatch(ctx, batch)
 
