@@ -23,7 +23,7 @@ func (r *ReceiptRepo) InsertRawReceipt(ctx context.Context, receiptDate time.Tim
 	query := `
 	INSERT INTO raw_receipts (purchase_date, receipt, retailer, parsed_products) 
 	VALUES ($1, $2, $3, $4) 
-	ON CONFLICT (purchase_date) 
+	ON CONFLICT (purchase_date, retailer) 
 	DO UPDATE SET parsed_products = EXCLUDED.parsed_products`
 
 	productsJSON, err := json.Marshal(parsedProducts)
