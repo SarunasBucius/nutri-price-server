@@ -115,7 +115,10 @@ func (s *Service) GetUnconfirmedReceiptSummaries(ctx context.Context) ([]model.U
 func (s *Service) getReceipt(ctx context.Context, receiptDate string) (string, error) {
 	if len(receiptDate) == 0 {
 		receipt, err := s.ReceiptRepo.GetUnprocessedReceipt(ctx)
-		return receipt, fmt.Errorf("get unprocessed receipt: %w", err)
+		if err != nil {
+			return "", fmt.Errorf("get unprocessed receipt: %w", err)
+		}
+		return receipt, nil
 	}
 
 	parsedDate, err := time.Parse(time.DateOnly, receiptDate)
