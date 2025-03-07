@@ -114,7 +114,7 @@ func (r *ReceiptRepo) GetProductNameAlias(ctx context.Context, parsedNames []str
 	query := `
 	SELECT parsed_product_name, user_defined_product_name
 	FROM purchased_products_aliases
-	WHERE parsed_product_name = ANY($1)`
+	WHERE parsed_product_name = ANY($1) AND user_defined_product_name IS NOT NULL`
 
 	rows, err := r.DB.Query(ctx, query, parsedNames)
 	if err != nil {
