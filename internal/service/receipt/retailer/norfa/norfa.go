@@ -72,11 +72,13 @@ func (p NorfaParser) GetRetailer() string { return retailer }
 
 func extractProductLines(receiptLines []string) ([]unparsedProduct, error) {
 	const productsEndSeparator = "#"
-	const linesBeforeProductsList = 6
-	if len(receiptLines) <= linesBeforeProductsList {
-		return nil, fmt.Errorf("too short receipt")
+	const productsStartSeparator = "Kvito numeris"
+	for i := range receiptLines {
+		if strings.Contains(receiptLines[i], productsStartSeparator) {
+			receiptLines = receiptLines[i+1:]
+			break
+		}
 	}
-	receiptLines = receiptLines[linesBeforeProductsList:]
 
 	var products []unparsedProduct
 	for i := range receiptLines {
