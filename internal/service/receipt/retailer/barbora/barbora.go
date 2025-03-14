@@ -2,6 +2,8 @@ package barbora
 
 import (
 	"fmt"
+	"log/slog"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -87,7 +89,7 @@ func parseProduct(product string, discountsByProduct map[string]string) (model.P
 
 	amount := productSplitBySpace[len(productSplitBySpace)-7]
 	unit := productSplitBySpace[len(productSplitBySpace)-6]
-	quantity, err := getQuantity(amount, unit)
+	quantity, err := getQuantity(amount, unit, productName)
 	if err != nil {
 		return model.PurchasedProductNew{}, fmt.Errorf("get quantity: %w", err)
 	}
@@ -102,7 +104,7 @@ func parseProduct(product string, discountsByProduct map[string]string) (model.P
 	}, nil
 }
 
-func getQuantity(amount, unit string) (model.Quantity, error) {
+func getQuantity(amount, unit, product string) (model.Quantity, error) {
 	amountFloat, err := ustrconv.StringToPositiveFloat(amount)
 	if err != nil {
 		return model.Quantity{}, fmt.Errorf("parse product amount: %w", err)
@@ -110,10 +112,7 @@ func getQuantity(amount, unit string) (model.Quantity, error) {
 
 	switch strings.ToLower(unit) {
 	case "vnt.":
-		return model.Quantity{
-			Amount: amountFloat,
-			Unit:   model.Pieces,
-		}, nil
+		return parseMetricQuantity(amountFloat, unit, product), nil
 	case "kg":
 		return model.Quantity{
 			Unit:   model.Grams,
@@ -121,6 +120,60 @@ func getQuantity(amount, unit string) (model.Quantity, error) {
 		}, nil
 	default:
 		return model.Quantity{}, nil
+	}
+}
+
+var numberAndQuantityUnit = regexp.MustCompile(`(\d+[.,]?\d*)(kg|g|ml|l)`)
+
+func parseMetricQuantity(amountPcs float64, unit, product string) model.Quantity {
+	productNameWithoutSpaces := strings.ReplaceAll(product, " ", "")
+	match := numberAndQuantityUnit.FindStringSubmatch(productNameWithoutSpaces)
+
+	if len(match) != 3 {
+		return model.Quantity{
+			Unit:   unit,
+			Amount: amountPcs,
+		}
+	}
+
+	match[1] = strings.ReplaceAll(match[1], ",", ".")
+
+	amount, err := strconv.ParseFloat(match[1], 32)
+	if err != nil {
+		slog.Error("parse float", "error", err)
+		return model.Quantity{
+			Unit:   unit,
+			Amount: amountPcs,
+		}
+	}
+
+	switch match[2] {
+	case "kg":
+		return model.Quantity{
+			Unit:   model.Grams,
+			Amount: amount * 1000 * amountPcs,
+		}
+	case "g":
+		return model.Quantity{
+			Unit:   model.Grams,
+			Amount: amount * amountPcs,
+		}
+	case "ml":
+		return model.Quantity{
+			Unit:   model.Milliliters,
+			Amount: amount * amountPcs,
+		}
+	case "l":
+		return model.Quantity{
+			Unit:   model.Milliliters,
+			Amount: amount * 1000 * amountPcs,
+		}
+	default:
+		slog.Error("unexpected regex result", "match", match[0])
+		return model.Quantity{
+			Unit:   unit,
+			Amount: amountPcs,
+		}
 	}
 }
 
