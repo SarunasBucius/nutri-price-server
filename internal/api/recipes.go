@@ -31,6 +31,7 @@ type IRecipeService interface {
 	GetMealPriceByDate(ctx context.Context, date time.Time) (model.CalculatedMealPrice, error)
 	GetMealNutritionalValueByDate(ctx context.Context, date time.Time) (model.CalculatedMealNutritionalValue, error)
 	CloneRecipes(ctx context.Context, recipeIDs []model.RecipeIDWithMultiplier, date string) error
+	GetRecipeNames(ctx context.Context) ([]string, error)
 }
 
 func (rc *RecipeAPI) InsertRecipe(w http.ResponseWriter, r *http.Request) {
@@ -202,4 +203,14 @@ func (rc *RecipeAPI) CloneRecipes(w http.ResponseWriter, r *http.Request) {
 	}
 
 	successResponse(r.Context(), w, newSuccessMessage("successfully cloned recipes"))
+}
+
+func (rc *RecipeAPI) GetRecipeNames(w http.ResponseWriter, r *http.Request) {
+	recipeNames, err := rc.Service.GetRecipeNames(r.Context())
+	if err != nil {
+		errorResponse(r.Context(), w, err)
+		return
+	}
+
+	successResponse(r.Context(), w, recipeNames)
 }

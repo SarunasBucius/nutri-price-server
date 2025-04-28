@@ -37,6 +37,7 @@ type IRecipeRepository interface {
 	GetRecipeIDsByDate(ctx context.Context, date time.Time) ([]int, error)
 	CloneRecipes(ctx context.Context, recipeIDs []int, date string, ingredientsByRecipeID map[int]model.Ingredients) error
 	GetRecipeNamesByIDs(ctx context.Context, recipeIDs []int) (map[int]string, error)
+	GetRecipeNames(ctx context.Context) ([]string, error)
 }
 
 type IProductRepository interface {
@@ -177,4 +178,12 @@ func (s *Service) insertEmptyProducts(ctx context.Context, ingredients []model.I
 		return fmt.Errorf("insert empty products: %w", err)
 	}
 	return nil
+}
+
+func (s *Service) GetRecipeNames(ctx context.Context) ([]string, error) {
+	recipeNames, err := s.RecipeRepo.GetRecipeNames(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("get recipe names: %w", err)
+	}
+	return recipeNames, nil
 }
