@@ -1,52 +1,48 @@
-### Nutri price server
-A Go-based REST API service for managing and calculating data related to products, their nutritional value, and meals. The service supports:
+# Nutri Price Server
 
-* CRUD Operations: Manage purchased products, product nutritional values, and recipes.
-* Meal Calculations: Compute meal prices and nutritional values based on selected products and recipes.
+**Nutri Price Server** is the server-side application powering the Nutri Price mobile app.  
+It provides a GraphQL API, and in some cases RESTful API, for accessing product information, nutritional values, and recipes, enabling seamless meal planning, budgeting, and dietary awareness.
 
-### Installation
+## 🚀 Features
 
-Prerequisites:
-* Go (version 1.23.1 used during development)
-* Docker (version 27.3.1 used during development)
-* just (optional, used to run commands using just)
-* The environment variables mentioned below must be set. Copy `.env.example` file and rename it to `.env`.
+- GraphQL API endpoints for products, nutrition values, purchases
+- RESTful API endpoints for recipes
+- Product and Recipe data management
+- Integration with PostgreSQL database
+- Database access with `pgx`
+- Deployment-ready for Google Cloud
 
-To run the app, execute the command `just start`. Check the `justfile`for other available commands.
+## 🛠️ Tech Stack
 
-### Environment variables
+- **Go** (Golang)
+- **gqlgen** (GraphQL server library for Go)
+- **PostgreSQL** (Relational database)
+- **pgx** (Go PostgreSQL driver and toolkit)
+- **Google Cloud (GCP)** (deployment and hosting)
 
-* DATABASE_URL - url to connect to postgres database
-* PORT - port to run the API server
+## 📦 Installation
 
-### Development Notes
+### Prerequisites
 
-#### Enable autocompletion for justfile commands
-* Generate completion script
-    * just --completions bash > ~/.just-completions.bash
-* Add following line to ~/.bashrc
-    * source ~/.just-completions.bash
-* Reload shell
-    * source ~/.bashrc
+- **Go** (v1.24 used during development)
+- **Docker** (v27.3.1 used during development)
+- **just** (optional; a command runner to simplify common tasks)
 
-#### Install gcloud
-https://cloud.google.com/sdk/docs/install#deb
-```
-sudo apt-get update
+### Setup
 
-sudo apt-get install apt-transport-https ca-certificates gnupg curl
+1. Copy the example environment variables file and set your own values:
+   ```bash
+   cp .env.example .env
+   ```
+2. Ensure the required environment variables are set:
 
-curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo gpg --dearmor -o /usr/share/keyrings/cloud.google.gpg
+| Variable       | Description                                   |
+|:---------------|:----------------------------------------------|
+| `DATABASE_URL` | PostgreSQL database connection string         |
+| `PORT`         | Port number for the API server               |
 
-echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
+3. Run the Application
 
-sudo apt-get update && sudo apt-get install google-cloud-cli
+- Using `just` (recommended): `just start`
 
-gcloud init
-```
-
-Other useful commands
-* gcloud auth login
-* gcloud config set project PROJECT_ID
-* gcloud auth configure-docker
-    * run before pushing docker image first time after gcloud installation
+- *(You can check the `justfile` for other available commands.)*
