@@ -30,6 +30,3 @@ build-and-deploy: docker-deploy deploy
 
 test:
 	go test ./...
-
-install-deps:
-	go install github.com/pressly/goose/v3/cmd/goose@latest
