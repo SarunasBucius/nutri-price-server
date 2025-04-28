@@ -1,0 +1,88 @@
+# GraphQL schema example
+#
+# https://gqlgen.com/getting-started/
+
+
+type ProductAggregate {
+  name: String!
+  varieties: [Variety!]!
+}
+
+type Variety {
+  varietyName: String!
+  nutritionalValue: NutritionalValue
+  purchases: [Purchase!]!
+}
+
+type NutritionalValue {
+  id: ID!
+  unit: String!
+  energyValueKcal: Float!
+  fat: Float!
+  saturatedFat: Float!
+  carbohydrate: Float!
+  carbohydrateSugars: Float!
+  fibre: Float!
+  protein: Float!
+  salt: Float!
+}
+
+type Purchase {
+  id: ID!
+  date: String!
+  quantity: Float!
+  price: Float!
+  retailer: String!
+  unit: String!
+  notes: String!
+}
+
+type Product {
+  id: ID!
+  name: String!
+}
+
+type Query {
+  products: [Product!]!
+  productAggregate(id: ID!): ProductAggregate!
+}
+
+input ProductAggregateInput {
+  name: String!
+  varietyName: String!
+  nutritionalValue: NutritionalValueInput
+  purchase: PurchaseInput
+}
+
+input NutritionalValueInput {
+  unit: String!
+  energyValueKcal: Float!
+  fat: Float!
+  saturatedFat: Float!
+  carbohydrate: Float!
+  carbohydrateSugars: Float!
+  fibre: Float!
+  protein: Float!
+  salt: Float!
+}
+
+input PurchaseInput {
+  date: String!
+  quantity: Float!
+  price: Float!
+  retailer: String!
+  unit: String!
+  notes: String!
+}
+
+type Mutation {
+  createProduct(input: ProductAggregateInput!): ID!
+  updateProduct(id: ID!, name: String!): ID!
+  updateVariety(oldName: String!, varietyName: String!): String!
+  updatePurchase(id: ID!, input: PurchaseInput!): ID!
+  upsertNutritionalValue(productID: ID!, varietyName: String!, input: NutritionalValueInput!): ID!
+  deleteProduct(id: ID!): ID!
+  deleteVariety(varietyName: String!): String!
+  deletePurchase(id: ID!): ID!
+  deleteNutritionalValue(id: ID!): ID!
+}

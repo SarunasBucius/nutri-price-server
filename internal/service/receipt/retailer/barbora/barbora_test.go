@@ -87,8 +87,8 @@ func TestBarboraParser_ParseProducts(t *testing.T) {
 						Full:     1.99,
 					},
 					Quantity: model.Quantity{
-						Amount: 1,
-						Unit:   model.Pieces,
+						Amount: 300,
+						Unit:   model.Grams,
 					},
 				},
 			},
