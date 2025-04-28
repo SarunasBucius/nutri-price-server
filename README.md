@@ -1,6 +1,6 @@
 # Nutri Price Server
 
-**Nutri Price Server** is the server-side application powering the Nutri Price mobile app.  
+**Nutri Price Server** is the server-side application powering the [Nutri Price mobile app](https://github.com/SarunasBucius/nutri-price-app).  
 It provides a GraphQL API, and in some cases RESTful API, for accessing product information, nutritional values, and recipes, enabling seamless meal planning, budgeting, and dietary awareness.
 
 ## 🚀 Features
