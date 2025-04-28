@@ -79,6 +79,11 @@ type RecipeSummary struct {
 	DishMadeDate string   `json:"dishMadeDate,omitempty"`
 }
 
+type RecipeIDAndName struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
+}
+
 type RecipeSummaries struct {
 	Cloned   []RecipeSummary `json:"clonedRecipeSummaries"`
 	Original []RecipeSummary `json:"originalRecipeSummaries"`

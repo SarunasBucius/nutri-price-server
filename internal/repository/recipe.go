@@ -314,21 +314,21 @@ WHERE id = $2 RETURNING id;
 
 }
 
-func (r *RecipeRepo) GetRecipeNames(ctx context.Context) ([]string, error) {
-	query := `SELECT recipe_name FROM recipes WHERE dish_made_date is null ORDER BY recipe_name`
+func (r *RecipeRepo) GetRecipeNames(ctx context.Context) ([]model.RecipeIDAndName, error) {
+	query := `SELECT id, recipe_name FROM recipes WHERE dish_made_date is null ORDER BY recipe_name`
 	rows, err := r.DB.Query(ctx, query)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	var recipeNames []string
+	var recipeIDsAndNames []model.RecipeIDAndName
 	for rows.Next() {
-		var name string
-		if err := rows.Scan(&name); err != nil {
+		var recipeIDAndName model.RecipeIDAndName
+		if err := rows.Scan(&recipeIDAndName.ID, &recipeIDAndName.Name); err != nil {
 			return nil, err
 		}
-		recipeNames = append(recipeNames, name)
+		recipeIDsAndNames = append(recipeIDsAndNames, recipeIDAndName)
 	}
-	return recipeNames, nil
+	return recipeIDsAndNames, nil
 }
