@@ -15,12 +15,6 @@ func LoadRouter(conf Config) *chi.Mux {
 
 	r.Post("/purchased-products/parse-from-receipt-text", h.receipt.ParseReceiptFromText)
 	r.Post("/purchased-products/parse-from-receipt-in-db", h.receipt.ParseReceiptInDB)
-	r.Post("/purchased-products", h.product.InsertProducts)
-	r.Get("/purchased-products/product-groups", h.product.GetProductGroups)
-	r.Get("/purchased-products", h.product.GetProducts)
-	r.Get("/purchased-products/{productID}", h.product.GetProduct)
-	r.Put("/purchased-products/{productID}", h.product.UpdateProduct)
-	r.Delete("/purchased-products/{productID}", h.product.DeleteProduct)
 	r.Get("/purchased-products/unconfirmed-receipts/summary", h.receipt.GetUnconfirmedReceiptSummaries)
 	r.Get("/purchased-products/unconfirmed-receipts/{retailerAndDate}", h.receipt.GetUnconfirmedReceipt)
 	r.Post("/purchased-products/confirm", h.product.ConfirmPurchasedProducts)
