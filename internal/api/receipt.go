@@ -25,6 +25,7 @@ type IReceiptService interface {
 	ProcessReceiptFromDB(ctx context.Context, receiptDate string) (model.ParseReceiptFromTextResponse, error)
 	GetUnconfirmedReceiptSummaries(ctx context.Context) ([]model.UnconfirmedReceiptSummary, error)
 	GetUnconfirmedReceipt(ctx context.Context, retailer, date string) ([]model.PurchasedProductNew, error)
+	GetLastReceiptDates(ctx context.Context) ([]model.LastReceiptDate, error)
 }
 
 func (rc *ReceiptAPI) ParseReceiptFromText(w http.ResponseWriter, r *http.Request) {
@@ -99,4 +100,14 @@ func (rc *ReceiptAPI) GetUnconfirmedReceipt(w http.ResponseWriter, r *http.Reque
 	}
 
 	successResponse(r.Context(), w, products)
+}
+
+func (rc *ReceiptAPI) GetLastReceiptDates(w http.ResponseWriter, r *http.Request) {
+	dates, err := rc.Service.GetLastReceiptDates(r.Context())
+	if err != nil {
+		errorResponse(r.Context(), w, err)
+		return
+	}
+
+	successResponse(r.Context(), w, emptyIfNil(dates))
 }

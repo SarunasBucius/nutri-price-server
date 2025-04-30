@@ -121,3 +121,11 @@ func (s *Service) getReceipt(ctx context.Context, receiptDate string) (string, e
 
 	return receipt, nil
 }
+
+func (s *Service) GetLastReceiptDates(ctx context.Context) ([]model.LastReceiptDate, error) {
+	lastReceiptDates, err := s.ReceiptRepo.GetLastReceiptDates(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("get last receipt dates: %w", err)
+	}
+	return lastReceiptDates, nil
+}

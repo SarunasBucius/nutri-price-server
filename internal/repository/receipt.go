@@ -199,3 +199,29 @@ func (r *ReceiptRepo) ConfirmReceipts(ctx context.Context, retailer, date string
 
 	return nil
 }
+
+func (r *ReceiptRepo) GetLastReceiptDates(ctx context.Context) ([]model.LastReceiptDate, error) {
+	query := `
+	SELECT retailer, MAX(purchase_date)
+FROM raw_receipts
+GROUP BY retailer`
+	rows, err := r.DB.Query(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var lastConfirmedDates []model.LastReceiptDate
+	for rows.Next() {
+		var lastConfirmedDate model.LastReceiptDate
+		var purchaseDate pgtype.Date
+		if err := rows.Scan(&lastConfirmedDate.Retailer, &purchaseDate); err != nil {
+			return nil, err
+		}
+		lastConfirmedDate.Date = purchaseDate.Time.Format("2006-01-02")
+		lastConfirmedDates = append(lastConfirmedDates, lastConfirmedDate)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return lastConfirmedDates, nil
+}
