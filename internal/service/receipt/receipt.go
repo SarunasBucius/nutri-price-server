@@ -12,13 +12,11 @@ import (
 
 type Service struct {
 	ReceiptRepo IReceiptRepository
-	ProductRepo IProductRepository
 }
 
-func NewReceiptService(receiptRepo IReceiptRepository, productRepo IProductRepository) *Service {
+func NewReceiptService(receiptRepo IReceiptRepository) *Service {
 	return &Service{
 		ReceiptRepo: receiptRepo,
-		ProductRepo: productRepo,
 	}
 }
 
@@ -28,11 +26,8 @@ type IReceiptRepository interface {
 	GetRawReceiptByDate(ctx context.Context, date time.Time) (string, error)
 	GetUnconfirmedReceipt(ctx context.Context, retailer, date string) ([]model.PurchasedProductNew, error)
 	GetUnconfirmedReceiptSummaries(ctx context.Context) ([]model.UnconfirmedReceiptSummary, error)
-	GetProductNameAlias(ctx context.Context, parsedNames []string) (map[string]string, error)
-}
-
-type IProductRepository interface {
-	GetDistinctProductsByNames(ctx context.Context, productNames []string) (map[string]model.PurchasedProduct, error)
+	GetProductNameAlias(ctx context.Context, parsedNames []string) (map[string]model.ProductAndVarietyName, error)
+	GetLastReceiptDates(ctx context.Context) ([]model.LastReceiptDate, error)
 }
 
 func (s *Service) ProcessReceipt(ctx context.Context, receipt string) (model.ParseReceiptFromTextResponse, error) {
@@ -56,12 +51,6 @@ func (s *Service) ProcessReceipt(ctx context.Context, receipt string) (model.Par
 		return model.ParseReceiptFromTextResponse{}, fmt.Errorf("get product name alias: %w", err)
 	}
 
-	productsByName, err := s.ProductRepo.GetDistinctProductsByNames(ctx, products.GetNames())
-	if err != nil {
-		return model.ParseReceiptFromTextResponse{}, fmt.Errorf("find products by names: %w", err)
-	}
-
-	products.FillCategoriesAndNotes(productsByName)
 	products.UpdateProductNames(aliasByParsedName)
 
 	if err := s.ReceiptRepo.InsertRawReceipt(ctx, date, receipt, receiptParser.GetRetailer(), products); err != nil {

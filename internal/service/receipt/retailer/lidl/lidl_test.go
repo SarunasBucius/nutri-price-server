@@ -97,44 +97,28 @@ func TestLidlParser_ParseProducts(t *testing.T) {
 			fields: fields{ReceiptLines: strings.Split(receiptExample, "\n"), Retailer: "lidl"},
 			want: model.ReceiptProducts{
 				{
-					Name: "Tamsusis šokoladas",
-					Price: model.Price{
-						Discount: 0,
-						Paid:     1.98,
-						Full:     1.98,
-					},
+					Name:  "Tamsusis šokoladas",
+					Price: 1.98,
 					Quantity: model.Quantity{
 						Unit:   model.Pieces,
 						Amount: 2,
 					},
 				},
 				{
-					Name: "Vynuogės žal.be kaul",
-					Price: model.Price{
-						Discount: 0,
-						Paid:     1.29,
-						Full:     1.29,
-					},
+					Name:  "Vynuogės žal.be kaul",
+					Price: 1.29,
 				},
 				{
-					Name: "Obuol. Crimson Snow",
-					Price: model.Price{
-						Discount: 0,
-						Paid:     2.33,
-						Full:     2.33,
-					},
+					Name:  "Obuol. Crimson Snow",
+					Price: 2.33,
 					Quantity: model.Quantity{
 						Unit:   model.Grams,
 						Amount: 1232,
 					},
 				},
 				{
-					Name: "Juod.duon.su saulėg.",
-					Price: model.Price{
-						Discount: 0.54,
-						Paid:     1.25,
-						Full:     1.79,
-					},
+					Name:  "Juod.duon.su saulėg.",
+					Price: 1.25,
 				},
 			},
 		},

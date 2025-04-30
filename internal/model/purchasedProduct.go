@@ -3,29 +3,29 @@ package model
 import "time"
 
 type PurchasedProductNew struct {
-	Name       string   `json:"name"`
-	Price      Price    `json:"price"`
-	Quantity   Quantity `json:"quantity"`
-	Group      string   `json:"group"`
-	Notes      string   `json:"notes"`
-	ParsedName string   `json:"parsedName"`
+	ProductID   string   `json:"productId"`
+	Name        string   `json:"name"`
+	VarietyName string   `json:"varietyName"`
+	Price       float64  `json:"price"`
+	Quantity    Quantity `json:"quantity"`
+	Notes       string   `json:"notes"`
+	ParsedName  string   `json:"parsedName"`
 }
 
-type Price struct {
-	Discount float64 `json:"discount"`
-	Paid     float64 `json:"paid"`
-	Full     float64 `json:"full"`
+type ProductAndVarietyName struct {
+	Name        string `json:"name"`
+	VarietyName string `json:"varietyName"`
 }
 
 type PurchasedProduct struct {
-	ID       int       `json:"id"`
-	Name     string    `json:"name"`
-	Retailer string    `json:"retailer"`
-	Price    Price     `json:"price"`
-	Quantity Quantity  `json:"quantity"`
-	Group    string    `json:"group"`
-	Date     time.Time `json:"date"`
-	Notes    string    `json:"notes"`
+	ID          int       `json:"id"`
+	Name        string    `json:"name"`
+	VarietyName string    `json:"varietyName"`
+	Retailer    string    `json:"retailer"`
+	Price       float64   `json:"price"`
+	Quantity    Quantity  `json:"quantity"`
+	Date        time.Time `json:"date"`
+	Notes       string    `json:"notes"`
 }
 
 type PurchasedProductsNew struct {

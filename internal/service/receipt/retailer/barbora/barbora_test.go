@@ -68,24 +68,16 @@ func TestBarboraParser_ParseProducts(t *testing.T) {
 			fields: fields{ReceiptLines: strings.Split(receiptExample, "\n"), Retailer: "barbora"},
 			want: model.ReceiptProducts{
 				{
-					Name: "Nektarinai, 1 kg",
-					Price: model.Price{
-						Discount: 1.10,
-						Paid:     1.01,
-						Full:     2.11,
-					},
+					Name:  "Nektarinai, 1 kg",
+					Price: 1.01,
 					Quantity: model.Quantity{
 						Amount: 612,
 						Unit:   model.Grams,
 					},
 				},
 				{
-					Name: "Salotos ROMAINE, 300 g",
-					Price: model.Price{
-						Discount: 0,
-						Paid:     1.99,
-						Full:     1.99,
-					},
+					Name:  "Salotos ROMAINE, 300 g",
+					Price: 1.99,
 					Quantity: model.Quantity{
 						Amount: 300,
 						Unit:   model.Grams,

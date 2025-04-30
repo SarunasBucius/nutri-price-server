@@ -96,23 +96,25 @@ func (r *ReceiptRepo) GetRawReceiptByDate(ctx context.Context, date time.Time) (
 	return receipt, nil
 }
 
-func (r *ReceiptRepo) UpdateProductNameAlias(ctx context.Context, editedNameByParsedName map[string]string) error {
+func (r *ReceiptRepo) UpdateProductNameAlias(ctx context.Context, editedNameByParsedName map[string]model.ProductAndVarietyName) error {
 	batch := &pgx.Batch{}
-	for parsedName, editedName := range editedNameByParsedName {
+	for parsedName, productAndVarietyName := range editedNameByParsedName {
 		batch.Queue(`
 		INSERT INTO purchased_products_aliases 
-		(user_defined_product_name, parsed_product_name) VALUES ($1, $2) 
+		(parsed_product_name, user_defined_product_name, user_defined_variety_name) VALUES ($1, $2, $3) 
 		ON CONFLICT (parsed_product_name) DO UPDATE
-		SET user_defined_product_name = EXCLUDED.user_defined_product_name`, editedName, parsedName)
+		SET user_defined_product_name = EXCLUDED.user_defined_product_name,
+			user_defined_variety_name = EXCLUDED.user_defined_variety_name`,
+			parsedName, productAndVarietyName.Name, productAndVarietyName.VarietyName)
 	}
 	br := r.DB.SendBatch(ctx, batch)
 
 	return br.Close()
 }
 
-func (r *ReceiptRepo) GetProductNameAlias(ctx context.Context, parsedNames []string) (map[string]string, error) {
+func (r *ReceiptRepo) GetProductNameAlias(ctx context.Context, parsedNames []string) (map[string]model.ProductAndVarietyName, error) {
 	query := `
-	SELECT parsed_product_name, user_defined_product_name
+	SELECT parsed_product_name, user_defined_product_name, user_defined_variety_name
 	FROM purchased_products_aliases
 	WHERE parsed_product_name = ANY($1) AND user_defined_product_name IS NOT NULL`
 
@@ -122,10 +124,11 @@ func (r *ReceiptRepo) GetProductNameAlias(ctx context.Context, parsedNames []str
 	}
 	defer rows.Close()
 
-	aliases := make(map[string]string)
+	aliases := make(map[string]model.ProductAndVarietyName)
 	for rows.Next() {
-		var parsedName, alias string
-		if err := rows.Scan(&parsedName, &alias); err != nil {
+		var parsedName string
+		var alias model.ProductAndVarietyName
+		if err := rows.Scan(&parsedName, &alias.Name, &alias.VarietyName); err != nil {
 			return nil, err
 		}
 		aliases[parsedName] = alias

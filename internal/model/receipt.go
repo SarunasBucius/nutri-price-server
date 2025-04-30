@@ -15,20 +15,7 @@ func (p *ReceiptProducts) GetNames() []string {
 	return productNames
 }
 
-func (p *ReceiptProducts) FillCategoriesAndNotes(productsByName map[string]PurchasedProduct) {
-	if p == nil || len(productsByName) == 0 {
-		return
-	}
-
-	for i := range *p {
-		product := *p
-		dbProduct := productsByName[product[i].Name]
-		product[i].Group = dbProduct.Group
-		product[i].Notes = dbProduct.Notes
-	}
-}
-
-func (p *ReceiptProducts) UpdateProductNames(aliasByParsedName map[string]string) {
+func (p *ReceiptProducts) UpdateProductNames(aliasByParsedName map[string]ProductAndVarietyName) {
 	if p == nil || len(aliasByParsedName) == 0 {
 		return
 	}
@@ -37,7 +24,8 @@ func (p *ReceiptProducts) UpdateProductNames(aliasByParsedName map[string]string
 		product := *p
 		product[i].ParsedName = product[i].Name
 		if alias, ok := aliasByParsedName[product[i].Name]; ok {
-			product[i].Name = alias
+			product[i].Name = alias.Name
+			product[i].VarietyName = alias.VarietyName
 		}
 	}
 }
@@ -46,4 +34,9 @@ type ParseReceiptFromTextResponse struct {
 	Date     string          `json:"date"`
 	Retailer string          `json:"retailer"`
 	Products ReceiptProducts `json:"products"`
+}
+
+type LastReceiptDate struct {
+	Date     string `json:"date"`
+	Retailer string `json:"retailer"`
 }

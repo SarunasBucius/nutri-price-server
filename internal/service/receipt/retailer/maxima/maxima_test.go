@@ -81,52 +81,32 @@ func TestMaximaParser_ParseProducts(t *testing.T) {
 			fields: fields{ReceiptLines: strings.Split(receiptExample, "\n"), Retailer: "maxima"},
 			want: model.ReceiptProducts{
 				{
-					Name: "Raudonėliai SALDVA",
-					Price: model.Price{
-						Discount: 0.66,
-						Paid:     0.64,
-						Full:     1.30,
-					},
+					Name:  "Raudonėliai SALDVA",
+					Price: 0.64,
 					Quantity: model.Quantity{
 						Unit:   model.Pieces,
 						Amount: 2,
 					},
 				},
 				{
-					Name: "Visų grūdo dalių avižiniai dribsniai WELL DONE",
-					Price: model.Price{
-						Discount: 0,
-						Paid:     1.29,
-						Full:     1.29,
-					},
+					Name:  "Visų grūdo dalių avižiniai dribsniai WELL DONE",
+					Price: 1.29,
 				},
 				{
-					Name: "Juodasis šokoladas (72 %) PERGALĖ",
-					Price: model.Price{
-						Discount: 2.00,
-						Paid:     2.99,
-						Full:     4.99,
-					},
+					Name:  "Juodasis šokoladas (72 %) PERGALĖ",
+					Price: 2.99,
 				},
 				{
-					Name: "Raudonos saldžiosios paprikos, 80-100 mm",
-					Price: model.Price{
-						Discount: 0.45,
-						Paid:     0.45,
-						Full:     0.90,
-					},
+					Name:  "Raudonos saldžiosios paprikos, 80-100 mm",
+					Price: 0.45,
 					Quantity: model.Quantity{
 						Unit:   model.Grams,
 						Amount: 300,
 					},
 				},
 				{
-					Name: "Lietuviški trumpavaisiai agurkai",
-					Price: model.Price{
-						Discount: 0,
-						Paid:     1.28,
-						Full:     1.28,
-					},
+					Name:  "Lietuviški trumpavaisiai agurkai",
+					Price: 1.28,
 					Quantity: model.Quantity{
 						Unit:   model.Grams,
 						Amount: 514,

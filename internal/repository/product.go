@@ -2,6 +2,8 @@ package repository
 
 import (
 	"context"
+	"fmt"
+	"strings"
 	"time"
 
 	"github.com/SarunasBucius/nutri-price-server/internal/model"
@@ -17,58 +19,70 @@ func NewProductRepo(db *pgxpool.Pool) *ProductRepo {
 	return &ProductRepo{DB: db}
 }
 
-func (p *ProductRepo) InsertProducts(ctx context.Context, retailer string, purchaseDate time.Time, products []model.PurchasedProductNew) error {
+func (p *ProductRepo) InsertProducts(ctx context.Context, productNames []string) error {
+	if len(productNames) == 0 {
+		return nil
+	}
+
+	queryPrefix := `INSERT INTO products (name) VALUES `
+	queryConflict := ` ON CONFLICT (name) DO NOTHING`
+
+	placeholders := make([]string, 0, len(productNames))
+	values := make([]any, 0, len(productNames))
+	for i := range productNames {
+		placeholders = append(placeholders, fmt.Sprintf("($%d)", i+1))
+		values = append(values, productNames[i])
+	}
+
+	query := queryPrefix + strings.Join(placeholders, ",") + queryConflict
+	_, err := p.DB.Exec(ctx, query, values...)
+	return err
+}
+
+func (p *ProductRepo) InsertPurchases(ctx context.Context, retailer string, purchaseDate time.Time, products []model.PurchasedProductNew) error {
 	rows := make([][]interface{}, 0, len(products))
 	for _, p := range products {
-		row := []interface{}{p.Name, retailer, p.Group, p.Quantity.Unit, p.Quantity.Amount, p.Price.Full, p.Price.Paid, p.Price.Discount, p.Notes, purchaseDate}
+		row := []interface{}{p.ProductID, retailer, purchaseDate, p.Quantity.Unit, p.Quantity.Amount, p.Price, p.Notes, p.VarietyName}
 		rows = append(rows, row)
 	}
 
 	_, err := p.DB.CopyFrom(ctx,
-		pgx.Identifier{"purchased_products"},
-		[]string{"product_name", "retailer", "product_group", "measurement_unit", "quantity", "full_price", "paid_price", "discount", "notes", "purchase_date"},
+		pgx.Identifier{"purchases"},
+		[]string{"product_id", "retailer", "purchase_date", "unit", "quantity", "price", "notes", "variety_name"},
 		pgx.CopyFromRows(rows),
 	)
 
 	return err
 }
 
-func (p *ProductRepo) GetDistinctProductsByNames(ctx context.Context, productNames []string) (map[string]model.PurchasedProduct, error) {
-	query := `
-	SELECT DISTINCT ON (product_name) 
-		id, product_name, retailer, product_group, measurement_unit, quantity, full_price, paid_price, discount, notes, purchase_date
-	FROM purchased_products
-	WHERE product_name=ANY($1)
-	ORDER BY product_name, purchase_date DESC`
-
+func (p *ProductRepo) GetProductIDsByName(ctx context.Context, productNames []string) (map[string]string, error) {
+	query := `SELECT id, name FROM products WHERE name=ANY($1)`
 	rows, err := p.DB.Query(ctx, query, productNames)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	products := make(map[string]model.PurchasedProduct)
+	productIDs := make(map[string]string)
 	for rows.Next() {
-		var p model.PurchasedProduct
-		if err := rows.Scan(
-			&p.ID, &p.Name, &p.Retailer, &p.Group, &p.Quantity.Unit, &p.Quantity.Amount, &p.Price.Full, &p.Price.Paid, &p.Price.Discount, &p.Notes, &p.Date,
-		); err != nil {
+		var id, name string
+		if err := rows.Scan(&id, &name); err != nil {
 			return nil, err
 		}
-		products[p.Name] = p
+		productIDs[name] = id
 	}
-	return products, nil
+	return productIDs, nil
 }
 
-func (p *ProductRepo) GetLastBoughtProductsByNamesOrGroups(ctx context.Context, productNamesOrGroups []string) ([]model.PurchasedProduct, error) {
+func (p *ProductRepo) GetLastBoughtProductsByNamesOrGroups(ctx context.Context, productNames []string) ([]model.PurchasedProduct, error) {
 	query := `
 	SELECT DISTINCT ON (product_name) 
-		id, product_name, retailer, product_group, measurement_unit, quantity, full_price, paid_price, discount, notes, purchase_date
-	FROM purchased_products
-	WHERE product_name=ANY($1) OR product_group=ANY($1)
-	ORDER BY product_name, purchase_date DESC`
+		id, variety_name, retailer, unit, quantity, price, notes, purchase_date
+	FROM purchases
+	WHERE variety_name=ANY($1)
+	ORDER BY variety_name, purchase_date DESC`
 
-	rows, err := p.DB.Query(ctx, query, productNamesOrGroups)
+	rows, err := p.DB.Query(ctx, query, productNames)
 	if err != nil {
 		return nil, err
 	}
@@ -78,7 +92,7 @@ func (p *ProductRepo) GetLastBoughtProductsByNamesOrGroups(ctx context.Context, 
 	for rows.Next() {
 		var p model.PurchasedProduct
 		if err := rows.Scan(
-			&p.ID, &p.Name, &p.Retailer, &p.Group, &p.Quantity.Unit, &p.Quantity.Amount, &p.Price.Full, &p.Price.Paid, &p.Price.Discount, &p.Notes, &p.Date,
+			&p.ID, &p.VarietyName, &p.Retailer, &p.Quantity.Unit, &p.Quantity.Amount, &p.Price, &p.Notes, &p.Date,
 		); err != nil {
 			return nil, err
 		}

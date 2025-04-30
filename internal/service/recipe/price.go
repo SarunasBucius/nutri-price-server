@@ -35,12 +35,12 @@ func calculateMealPrice(ingredients []model.Ingredient, purchasedProducts []mode
 
 func calculateIngredientPrice(ingredient model.Ingredient, purchasedProducts []model.PurchasedProduct) model.CalculatedProductPrice {
 	for _, product := range purchasedProducts {
-		if product.Name != ingredient.Product && product.Group != ingredient.Product {
+		if product.Name != ingredient.Product {
 			continue
 		}
 
 		if product.Quantity.Unit == ingredient.Unit {
-			unroundedProductPrice := product.Price.Paid / product.Quantity.Amount * ingredient.Amount
+			unroundedProductPrice := product.Price / product.Quantity.Amount * ingredient.Amount
 			productPrice := umath.RoundFloat(unroundedProductPrice, 2)
 			return model.CalculatedProductPrice{
 				Product: ingredient.Product,

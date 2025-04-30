@@ -190,9 +190,6 @@ func parseProduct(product unparsedProduct) (model.PurchasedProductNew, error) {
 		Name:     strings.TrimSpace(productName),
 		Price:    price,
 		Quantity: quantity,
-		// Group and notes will be filled from DB later.
-		Group: "",
-		Notes: "",
 	}, nil
 }
 
@@ -230,10 +227,10 @@ func getUnparsedPrice(product unparsedProduct) string {
 	return productSplitBySpaces[len(productSplitBySpaces)-2]
 }
 
-func parsePrice(product unparsedProduct, unparsedPrice string) (model.Price, error) {
+func parsePrice(product unparsedProduct, unparsedPrice string) (float64, error) {
 	fullPrice, err := ustrconv.StringToPositiveFloat(unparsedPrice)
 	if err != nil {
-		return model.Price{}, fmt.Errorf("parse product price: %w", err)
+		return 0, fmt.Errorf("parse product price: %w", err)
 	}
 	if product.hasDeposit {
 		fullPrice += 0.10
@@ -241,14 +238,10 @@ func parsePrice(product unparsedProduct, unparsedPrice string) (model.Price, err
 
 	discount, err := parseDiscount(product.discount)
 	if err != nil {
-		return model.Price{}, fmt.Errorf("parse product discount: %w", err)
+		return 0, fmt.Errorf("parse product discount: %w", err)
 	}
 
-	return model.Price{
-		Full:     umath.RoundFloat(fullPrice, 2),
-		Discount: umath.RoundFloat(discount, 2),
-		Paid:     umath.RoundFloat(fullPrice-discount, 2),
-	}, nil
+	return umath.RoundFloat(fullPrice-discount, 2), nil
 }
 
 func parseDiscount(discountLine string) (float64, error) {

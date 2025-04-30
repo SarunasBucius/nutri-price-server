@@ -48,21 +48,13 @@ func (p BarboraParser) ParseProducts() (model.ReceiptProducts, error) {
 		return nil, fmt.Errorf("extract product lines: %w", err)
 	}
 
-	discountedProducts := extractDiscountedProducts(p.ReceiptLines)
-
-	discountsByProduct, err := getDiscountsByProduct(discountedProducts)
-	if err != nil {
-		return nil, fmt.Errorf("get discounts by product: %w", err)
-	}
-
 	parsedProducts := make([]model.PurchasedProductNew, 0, len(unparsedProducts))
 	for _, product := range unparsedProducts {
 		if isDeposit(product) {
-			parsedProducts[len(parsedProducts)-1].Price.Paid += 0.1
-			parsedProducts[len(parsedProducts)-1].Price.Full += 0.1
+			parsedProducts[len(parsedProducts)-1].Price += 0.1
 			continue
 		}
-		parsedProduct, err := parseProduct(product, discountsByProduct)
+		parsedProduct, err := parseProduct(product)
 		if err != nil {
 			return nil, fmt.Errorf("parse product %+v: %w", product, err)
 		}
@@ -73,7 +65,7 @@ func (p BarboraParser) ParseProducts() (model.ReceiptProducts, error) {
 
 func (p BarboraParser) GetRetailer() string { return retailer }
 
-func parseProduct(product string, discountsByProduct map[string]string) (model.PurchasedProductNew, error) {
+func parseProduct(product string) (model.PurchasedProductNew, error) {
 	productSplitBySpace := strings.Split(product, " ")
 	if len(productSplitBySpace) < 9 {
 		return model.PurchasedProductNew{}, fmt.Errorf("unexpected product line: %v", product)
@@ -82,7 +74,7 @@ func parseProduct(product string, discountsByProduct map[string]string) (model.P
 	productName := strings.Join(productSplitBySpace[1:len(productSplitBySpace)-7], " ")
 
 	unparsedPrice := strings.TrimPrefix(productSplitBySpace[len(productSplitBySpace)-1], "€")
-	price, err := parsePrice(unparsedPrice, discountsByProduct[productName])
+	price, err := parsePrice(unparsedPrice)
 	if err != nil {
 		return model.PurchasedProductNew{}, fmt.Errorf("parse price: %w", err)
 	}
@@ -98,9 +90,6 @@ func parseProduct(product string, discountsByProduct map[string]string) (model.P
 		Name:     productName,
 		Price:    price,
 		Quantity: quantity,
-		// Group and notes will be filled from DB later.
-		Group: "",
-		Notes: "",
 	}, nil
 }
 
@@ -177,31 +166,13 @@ func parseMetricQuantity(amountPcs float64, unit, product string) model.Quantity
 	}
 }
 
-func parsePrice(unparsedPrice, unparsedDiscount string) (model.Price, error) {
+func parsePrice(unparsedPrice string) (float64, error) {
 	paid, err := ustrconv.StringToPositiveFloat(unparsedPrice)
 	if err != nil {
-		return model.Price{}, fmt.Errorf("parse product price: %w", err)
+		return 0, fmt.Errorf("parse product price: %w", err)
 	}
 
-	discount, err := parseDiscount(unparsedDiscount)
-	if err != nil {
-		return model.Price{}, fmt.Errorf("parse product discount: %w", err)
-	}
-
-	return model.Price{
-		Full:     umath.RoundFloat(paid+discount, 2),
-		Discount: umath.RoundFloat(discount, 2),
-		Paid:     umath.RoundFloat(paid, 2),
-	}, nil
-}
-
-func parseDiscount(discountLine string) (float64, error) {
-	if len(discountLine) == 0 {
-		return 0, nil
-	}
-
-	discount := strings.TrimPrefix(discountLine, "-€")
-	return ustrconv.StringToPositiveFloat(discount)
+	return umath.RoundFloat(paid, 2), nil
 }
 
 func extractProductLines(receiptLines []string) ([]string, error) {

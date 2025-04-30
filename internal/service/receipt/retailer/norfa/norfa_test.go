@@ -55,17 +55,17 @@ func TestParser_ParseProducts(t *testing.T) {
 			want: model.ReceiptProducts{
 				{
 					Name:     "Ledai AURUM 100ml su kakaviniu glaistu",
-					Price:    model.Price{Paid: 0.39, Full: 0.39},
+					Price:    0.39,
 					Quantity: model.Quantity{Unit: model.Milliliters, Amount: 100},
 				},
 				{
 					Name:     "Salierų stiebai",
-					Price:    model.Price{Paid: 0.46, Full: 0.91, Discount: 0.45},
+					Price:    0.46,
 					Quantity: model.Quantity{Unit: model.Grams, Amount: 466},
 				},
 				{
 					Name:     "Raudonieji lęšiai SKANĖJA, 500g",
-					Price:    model.Price{Paid: 1.89, Full: 1.89},
+					Price:    1.89,
 					Quantity: model.Quantity{Unit: model.Grams, Amount: 500},
 				},
 			},
