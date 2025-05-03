@@ -187,9 +187,9 @@ func parseProduct(product unparsedProduct) (model.PurchasedProductNew, error) {
 	}
 
 	return model.PurchasedProductNew{
-		Name:     strings.TrimSpace(productName),
-		Price:    price,
-		Quantity: quantity,
+		VarietyName: strings.TrimSpace(productName),
+		Price:       price,
+		Quantity:    quantity,
 	}, nil
 }
 

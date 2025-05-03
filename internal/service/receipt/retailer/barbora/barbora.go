@@ -87,9 +87,9 @@ func parseProduct(product string) (model.PurchasedProductNew, error) {
 	}
 
 	return model.PurchasedProductNew{
-		Name:     productName,
-		Price:    price,
-		Quantity: quantity,
+		VarietyName: productName,
+		Price:       price,
+		Quantity:    quantity,
 	}, nil
 }
 

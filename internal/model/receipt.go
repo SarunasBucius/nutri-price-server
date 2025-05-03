@@ -22,7 +22,7 @@ func (p *ReceiptProducts) UpdateProductNames(aliasByParsedName map[string]Produc
 
 	for i := range *p {
 		product := *p
-		product[i].ParsedName = product[i].Name
+		product[i].ParsedName = product[i].VarietyName
 		if alias, ok := aliasByParsedName[product[i].Name]; ok {
 			product[i].Name = alias.Name
 			product[i].VarietyName = alias.VarietyName
