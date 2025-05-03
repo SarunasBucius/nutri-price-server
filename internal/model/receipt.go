@@ -2,14 +2,14 @@ package model
 
 type ReceiptProducts []PurchasedProductNew
 
-func (p *ReceiptProducts) GetNames() []string {
+func (p *ReceiptProducts) GetVarietyNames() []string {
 	if p == nil {
 		return nil
 	}
 
 	productNames := make([]string, 0, len(*p))
 	for _, product := range *p {
-		productNames = append(productNames, product.Name)
+		productNames = append(productNames, product.VarietyName)
 	}
 
 	return productNames

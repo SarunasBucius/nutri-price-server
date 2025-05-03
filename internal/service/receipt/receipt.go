@@ -47,13 +47,6 @@ func (s *Service) ProcessReceipt(ctx context.Context, receipt string) (model.Par
 		return model.ParseReceiptFromTextResponse{}, fmt.Errorf("parse products: %w", err)
 	}
 
-	aliasByParsedName, err := s.ReceiptRepo.GetProductNameAlias(ctx, products.GetNames())
-	if err != nil {
-		return model.ParseReceiptFromTextResponse{}, fmt.Errorf("get product name alias: %w", err)
-	}
-
-	products.UpdateProductNames(aliasByParsedName)
-
 	if err := s.ReceiptRepo.InsertRawReceipt(ctx, date, receipt, receiptParser.GetRetailer(), products); err != nil {
 		slog.ErrorContext(ctx, "insert raw receipt", "error", err)
 	}
@@ -81,7 +74,7 @@ func (s *Service) GetUnconfirmedReceipt(ctx context.Context, retailer, date stri
 
 	products := model.ReceiptProducts(unconfirmedProducts)
 
-	aliasByParsedName, err := s.ReceiptRepo.GetProductNameAlias(ctx, products.GetNames())
+	aliasByParsedName, err := s.ReceiptRepo.GetProductNameAlias(ctx, products.GetVarietyNames())
 	if err != nil {
 		return nil, fmt.Errorf("get product name alias: %w", err)
 	}
