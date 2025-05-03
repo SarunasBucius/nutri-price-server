@@ -26,6 +26,7 @@ type IReceiptService interface {
 	GetUnconfirmedReceiptSummaries(ctx context.Context) ([]model.UnconfirmedReceiptSummary, error)
 	GetUnconfirmedReceipt(ctx context.Context, retailer, date string) ([]model.PurchasedProductNew, error)
 	GetLastReceiptDates(ctx context.Context) ([]model.LastReceiptDate, error)
+	GetProductsWithMissingInfo(ctx context.Context, dateFrom string) ([]model.ProductAndVarietyName, error)
 }
 
 func (rc *ReceiptAPI) ParseReceiptFromText(w http.ResponseWriter, r *http.Request) {
@@ -110,4 +111,20 @@ func (rc *ReceiptAPI) GetLastReceiptDates(w http.ResponseWriter, r *http.Request
 	}
 
 	successResponse(r.Context(), w, emptyIfNil(dates))
+}
+
+func (rc *ReceiptAPI) GetProductsWithMissingInfo(w http.ResponseWriter, r *http.Request) {
+	dateFrom := r.URL.Query().Get("dateFrom")
+	if dateFrom == "" {
+		errorResponse(r.Context(), w, uerror.NewBadRequest("missing dateFrom query parameter", nil))
+		return
+	}
+
+	products, err := rc.Service.GetProductsWithMissingInfo(r.Context(), dateFrom)
+	if err != nil {
+		errorResponse(r.Context(), w, err)
+		return
+	}
+
+	successResponse(r.Context(), w, emptyIfNil(products))
 }

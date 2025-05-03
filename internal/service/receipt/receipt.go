@@ -28,6 +28,7 @@ type IReceiptRepository interface {
 	GetUnconfirmedReceiptSummaries(ctx context.Context) ([]model.UnconfirmedReceiptSummary, error)
 	GetProductNameAlias(ctx context.Context, parsedNames []string) (map[string]model.ProductAndVarietyName, error)
 	GetLastReceiptDates(ctx context.Context) ([]model.LastReceiptDate, error)
+	GetProductsWithMissingInfo(ctx context.Context, dateFrom string) ([]model.ProductAndVarietyName, error)
 }
 
 func (s *Service) ProcessReceipt(ctx context.Context, receipt string) (model.ParseReceiptFromTextResponse, error) {
@@ -128,4 +129,12 @@ func (s *Service) GetLastReceiptDates(ctx context.Context) ([]model.LastReceiptD
 		return nil, fmt.Errorf("get last receipt dates: %w", err)
 	}
 	return lastReceiptDates, nil
+}
+
+func (s *Service) GetProductsWithMissingInfo(ctx context.Context, dateFrom string) ([]model.ProductAndVarietyName, error) {
+	products, err := s.ReceiptRepo.GetProductsWithMissingInfo(ctx, dateFrom)
+	if err != nil {
+		return nil, fmt.Errorf("get products with missing info: %w", err)
+	}
+	return products, nil
 }

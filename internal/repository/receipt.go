@@ -225,3 +225,26 @@ GROUP BY retailer`
 	}
 	return lastConfirmedDates, nil
 }
+
+func (r *ReceiptRepo) GetProductsWithMissingInfo(ctx context.Context, dateFrom string) ([]model.ProductAndVarietyName, error) {
+	query := `
+	SELECT DISTINCT name, purchases.variety_name
+	FROM purchases 
+	LEFT JOIN nutritional_values_v2 ON purchases.variety_name = nutritional_values_v2.variety_name
+	JOIN products ON products.id = purchases.product_id
+	WHERE purchase_date > $1 AND (nutritional_values_v2.id is null OR purchases.unit = '')`
+	rows, err := r.DB.Query(ctx, query, dateFrom)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var products []model.ProductAndVarietyName
+	for rows.Next() {
+		var product model.ProductAndVarietyName
+		if err := rows.Scan(&product.Name, &product.VarietyName); err != nil {
+			return nil, err
+		}
+		products = append(products, product)
+	}
+	return products, nil
+}

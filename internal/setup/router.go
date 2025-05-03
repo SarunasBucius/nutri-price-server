@@ -19,6 +19,7 @@ func LoadRouter(conf Config) *chi.Mux {
 	r.Get("/purchased-products/unconfirmed-receipts/{retailerAndDate}", h.receipt.GetUnconfirmedReceipt)
 	r.Post("/purchased-products/confirm", h.product.ConfirmPurchasedProducts)
 	r.Get("/purchased-products/last-receipt-dates", h.receipt.GetLastReceiptDates)
+	r.Get("/purchased-products/with-missing-info", h.receipt.GetProductsWithMissingInfo)
 
 	r.Post("/nutritional-values", h.nv.InsertNutritionalValues)
 	r.Get("/nutritional-values", h.nv.GetNutritionalValues)
