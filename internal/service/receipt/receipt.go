@@ -78,13 +78,6 @@ func (s *Service) GetUnconfirmedReceipt(ctx context.Context, retailer, date stri
 	if err != nil {
 		return nil, fmt.Errorf("get unconfirmed receipt: %w", err)
 	}
-	for i := range unconfirmedProducts {
-		// TODO: remove this check when all old receipts are confirmed, new ones should have ParsedName filled
-		if len(unconfirmedProducts[i].ParsedName) != 0 {
-			continue
-		}
-		unconfirmedProducts[i].ParsedName = unconfirmedProducts[i].Name
-	}
 
 	products := model.ReceiptProducts(unconfirmedProducts)
 
