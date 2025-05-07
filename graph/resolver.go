@@ -1,6 +1,9 @@
 package graph
 
-import "github.com/jackc/pgx/v5/pgxpool"
+import (
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
+	"github.com/jackc/pgx/v5/pgxpool"
+)
 
 // This file will not be regenerated automatically.
 //
@@ -8,5 +11,6 @@ import "github.com/jackc/pgx/v5/pgxpool"
 
 //go:generate go run github.com/99designs/gqlgen generate
 type Resolver struct {
-	DB *pgxpool.Pool
+	DB       *pgxpool.Pool
+	DynamoDB *dynamodb.Client
 }

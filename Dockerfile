@@ -3,9 +3,8 @@ WORKDIR /src
 COPY . .
 RUN CGO_ENABLED=0 GOOS=linux go build -o /bin/nutriPrice ./main.go
 
-FROM scratch
+FROM gcr.io/distroless/static:nonroot
 COPY --from=build /bin/nutriPrice /bin/nutriPrice
 
 EXPOSE 8080
-
 CMD ["/bin/nutriPrice"]

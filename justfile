@@ -22,6 +22,9 @@ deploy:
     gcloud run deploy nutri-price-server \
     --image eu.gcr.io/nutriprice/nutri-price-server \
     --set-secrets DATABASE_URL=DATABASE_URL:latest \
+    --set-secrets AWS_ACCESS_KEY_ID=AWS_ACCESS_KEY_ID:latest \
+    --set-secrets AWS_SECRET_ACCESS_KEY=AWS_SECRET_ACCESS_KEY:latest \
+    --set-secrets AWS_REGION=AWS_REGION:latest \
     --platform managed \
     --region europe-west1 \
     --allow-unauthenticated

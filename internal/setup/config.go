@@ -6,13 +6,16 @@ import (
 	"log/slog"
 	"os"
 
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joho/godotenv"
 )
 
 type Config struct {
-	Port   string
-	DBPool *pgxpool.Pool
+	Port     string
+	DBPool   *pgxpool.Pool
+	DynamoDB *dynamodb.Client
 }
 
 func LoadConfig(ctx context.Context) (Config, error) {
@@ -31,9 +34,15 @@ func LoadConfig(ctx context.Context) (Config, error) {
 		return Config{}, fmt.Errorf("empty port")
 	}
 
+	dynamoDB, err := initDynamoDB(ctx)
+	if err != nil {
+		return Config{}, fmt.Errorf("init dynamodb: %w", err)
+	}
+
 	return Config{
-		Port:   port,
-		DBPool: dbPool,
+		Port:     port,
+		DBPool:   dbPool,
+		DynamoDB: dynamoDB,
 	}, nil
 }
 
@@ -43,4 +52,13 @@ func initPostgres(ctx context.Context, dbURL string) (*pgxpool.Pool, error) {
 		return nil, err
 	}
 	return dbPool, nil
+}
+
+func initDynamoDB(ctx context.Context) (*dynamodb.Client, error) {
+	cfg, err := config.LoadDefaultConfig(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("load dynamo DB config: %w", err)
+	}
+
+	return dynamodb.NewFromConfig(cfg), nil
 }

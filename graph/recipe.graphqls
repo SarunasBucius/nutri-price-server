@@ -1,0 +1,63 @@
+type RecipeAggregate {
+  recipeName: String!
+  steps: [String!]!
+  notes: String!
+  ingredients: [Ingredient!]!
+}
+
+type PreparedRecipeAggregate {
+  recipeName: String!
+  steps: [String!]!
+  notes: String!
+  ingredients: [Ingredient!]!
+  preparedDate: String!
+  portion: Float!
+}
+
+type Ingredient {
+  product: String!
+  quantity: Float!
+  unit: String!
+  notes: String!
+}
+
+extend type Query {
+  recipes: [String!]!
+  recipe(recipeName: String!): RecipeAggregate!
+  preparedRecipesByDate(date: String!): [String!]!
+  preparedRecipe(recipeName: String!, date: String!): PreparedRecipeAggregate!
+}
+
+input RecipeInput {
+  recipeName: String!
+  steps: [String!]!
+  notes: String!
+  ingredients: [IngredientInput!]!
+}
+
+input PreparedRecipeInput {
+  recipeName: String!
+  steps: [String!]!
+  notes: String!
+  ingredients: [IngredientInput!]!
+  preparedDate: String!
+  portion: Float!
+}
+
+input IngredientInput {
+  product: String!
+  quantity: Float!
+  unit: String!
+  notes: String!
+}
+
+input PrepareRecipe {
+  recipeName: String!
+  portion: Float!
+}
+
+extend type Mutation {
+  updateRecipe(recipe: RecipeInput!): String!
+  updatePreparedRecipe(recipe: PreparedRecipeInput!): String!
+  prepareRecipe(date: String!, prepareRecipes: [PrepareRecipe!]!): String!
+}

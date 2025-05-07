@@ -2,6 +2,20 @@
 
 package model
 
+type Ingredient struct {
+	Product  string  `json:"product"`
+	Quantity float64 `json:"quantity"`
+	Unit     string  `json:"unit"`
+	Notes    string  `json:"notes"`
+}
+
+type IngredientInput struct {
+	Product  string  `json:"product"`
+	Quantity float64 `json:"quantity"`
+	Unit     string  `json:"unit"`
+	Notes    string  `json:"notes"`
+}
+
 type Mutation struct {
 }
 
@@ -28,6 +42,29 @@ type NutritionalValueInput struct {
 	Fibre              float64 `json:"fibre"`
 	Protein            float64 `json:"protein"`
 	Salt               float64 `json:"salt"`
+}
+
+type PrepareRecipe struct {
+	RecipeName string  `json:"recipeName"`
+	Portion    float64 `json:"portion"`
+}
+
+type PreparedRecipeAggregate struct {
+	RecipeName   string        `json:"recipeName"`
+	Steps        []string      `json:"steps"`
+	Notes        string        `json:"notes"`
+	Ingredients  []*Ingredient `json:"ingredients"`
+	PreparedDate string        `json:"preparedDate"`
+	Portion      float64       `json:"portion"`
+}
+
+type PreparedRecipeInput struct {
+	RecipeName   string             `json:"recipeName"`
+	Steps        []string           `json:"steps"`
+	Notes        string             `json:"notes"`
+	Ingredients  []*IngredientInput `json:"ingredients"`
+	PreparedDate string             `json:"preparedDate"`
+	Portion      float64            `json:"portion"`
 }
 
 type Product struct {
@@ -67,6 +104,20 @@ type PurchaseInput struct {
 }
 
 type Query struct {
+}
+
+type RecipeAggregate struct {
+	RecipeName  string        `json:"recipeName"`
+	Steps       []string      `json:"steps"`
+	Notes       string        `json:"notes"`
+	Ingredients []*Ingredient `json:"ingredients"`
+}
+
+type RecipeInput struct {
+	RecipeName  string             `json:"recipeName"`
+	Steps       []string           `json:"steps"`
+	Notes       string             `json:"notes"`
+	Ingredients []*IngredientInput `json:"ingredients"`
 }
 
 type Variety struct {

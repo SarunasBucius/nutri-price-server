@@ -14,6 +14,7 @@ import (
 	"github.com/SarunasBucius/nutri-price-server/graph"
 	"github.com/SarunasBucius/nutri-price-server/internal/setup"
 	"github.com/SarunasBucius/nutri-price-server/migrations"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/go-chi/chi/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/vektah/gqlparser/v2/ast"
@@ -41,7 +42,7 @@ func main() {
 	if !strings.HasPrefix(port, ":") {
 		port = ":" + port
 	}
-	attachGraphQLRoutes(config.DBPool, r)
+	attachGraphQLRoutes(config.DBPool, r, config.DynamoDB)
 
 	if err := http.ListenAndServe(port, r); err != nil {
 		slog.Error("listen and serve", "error", err)
@@ -49,9 +50,10 @@ func main() {
 	}
 }
 
-func attachGraphQLRoutes(db *pgxpool.Pool, r *chi.Mux) {
+func attachGraphQLRoutes(db *pgxpool.Pool, r *chi.Mux, dynamoDB *dynamodb.Client) {
 	srv := handler.New(graph.NewExecutableSchema(graph.Config{Resolvers: &graph.Resolver{
-		DB: db,
+		DB:       db,
+		DynamoDB: dynamoDB,
 	}}))
 
 	srv.AddTransport(transport.Options{})

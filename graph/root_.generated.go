@@ -43,14 +43,24 @@ type DirectiveRoot struct {
 }
 
 type ComplexityRoot struct {
+	Ingredient struct {
+		Notes    func(childComplexity int) int
+		Product  func(childComplexity int) int
+		Quantity func(childComplexity int) int
+		Unit     func(childComplexity int) int
+	}
+
 	Mutation struct {
 		CreateProduct          func(childComplexity int, input model.ProductAggregateInput) int
 		DeleteNutritionalValue func(childComplexity int, id string) int
 		DeleteProduct          func(childComplexity int, id string) int
 		DeletePurchase         func(childComplexity int, id string) int
 		DeleteVariety          func(childComplexity int, varietyName string) int
+		PrepareRecipe          func(childComplexity int, date string, prepareRecipes []*model.PrepareRecipe) int
+		UpdatePreparedRecipe   func(childComplexity int, recipe model.PreparedRecipeInput) int
 		UpdateProduct          func(childComplexity int, id string, name string) int
 		UpdatePurchase         func(childComplexity int, id string, input model.PurchaseInput) int
+		UpdateRecipe           func(childComplexity int, recipe model.RecipeInput) int
 		UpdateVariety          func(childComplexity int, oldName string, varietyName string) int
 		UpsertNutritionalValue func(childComplexity int, productID string, varietyName string, input model.NutritionalValueInput) int
 	}
@@ -66,6 +76,15 @@ type ComplexityRoot struct {
 		Salt               func(childComplexity int) int
 		SaturatedFat       func(childComplexity int) int
 		Unit               func(childComplexity int) int
+	}
+
+	PreparedRecipeAggregate struct {
+		Ingredients  func(childComplexity int) int
+		Notes        func(childComplexity int) int
+		Portion      func(childComplexity int) int
+		PreparedDate func(childComplexity int) int
+		RecipeName   func(childComplexity int) int
+		Steps        func(childComplexity int) int
 	}
 
 	Product struct {
@@ -89,8 +108,19 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		ProductAggregate func(childComplexity int, id string) int
-		Products         func(childComplexity int) int
+		PreparedRecipe        func(childComplexity int, recipeName string, date string) int
+		PreparedRecipesByDate func(childComplexity int, date string) int
+		ProductAggregate      func(childComplexity int, id string) int
+		Products              func(childComplexity int) int
+		Recipe                func(childComplexity int, recipeName string) int
+		Recipes               func(childComplexity int) int
+	}
+
+	RecipeAggregate struct {
+		Ingredients func(childComplexity int) int
+		Notes       func(childComplexity int) int
+		RecipeName  func(childComplexity int) int
+		Steps       func(childComplexity int) int
 	}
 
 	Variety struct {
@@ -118,6 +148,34 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 	ec := executionContext{nil, e, 0, 0, nil}
 	_ = ec
 	switch typeName + "." + field {
+
+	case "Ingredient.notes":
+		if e.complexity.Ingredient.Notes == nil {
+			break
+		}
+
+		return e.complexity.Ingredient.Notes(childComplexity), true
+
+	case "Ingredient.product":
+		if e.complexity.Ingredient.Product == nil {
+			break
+		}
+
+		return e.complexity.Ingredient.Product(childComplexity), true
+
+	case "Ingredient.quantity":
+		if e.complexity.Ingredient.Quantity == nil {
+			break
+		}
+
+		return e.complexity.Ingredient.Quantity(childComplexity), true
+
+	case "Ingredient.unit":
+		if e.complexity.Ingredient.Unit == nil {
+			break
+		}
+
+		return e.complexity.Ingredient.Unit(childComplexity), true
 
 	case "Mutation.createProduct":
 		if e.complexity.Mutation.CreateProduct == nil {
@@ -179,6 +237,30 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.DeleteVariety(childComplexity, args["varietyName"].(string)), true
 
+	case "Mutation.prepareRecipe":
+		if e.complexity.Mutation.PrepareRecipe == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_prepareRecipe_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.PrepareRecipe(childComplexity, args["date"].(string), args["prepareRecipes"].([]*model.PrepareRecipe)), true
+
+	case "Mutation.updatePreparedRecipe":
+		if e.complexity.Mutation.UpdatePreparedRecipe == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updatePreparedRecipe_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UpdatePreparedRecipe(childComplexity, args["recipe"].(model.PreparedRecipeInput)), true
+
 	case "Mutation.updateProduct":
 		if e.complexity.Mutation.UpdateProduct == nil {
 			break
@@ -202,6 +284,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.UpdatePurchase(childComplexity, args["id"].(string), args["input"].(model.PurchaseInput)), true
+
+	case "Mutation.updateRecipe":
+		if e.complexity.Mutation.UpdateRecipe == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updateRecipe_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UpdateRecipe(childComplexity, args["recipe"].(model.RecipeInput)), true
 
 	case "Mutation.updateVariety":
 		if e.complexity.Mutation.UpdateVariety == nil {
@@ -297,6 +391,48 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.NutritionalValue.Unit(childComplexity), true
 
+	case "PreparedRecipeAggregate.ingredients":
+		if e.complexity.PreparedRecipeAggregate.Ingredients == nil {
+			break
+		}
+
+		return e.complexity.PreparedRecipeAggregate.Ingredients(childComplexity), true
+
+	case "PreparedRecipeAggregate.notes":
+		if e.complexity.PreparedRecipeAggregate.Notes == nil {
+			break
+		}
+
+		return e.complexity.PreparedRecipeAggregate.Notes(childComplexity), true
+
+	case "PreparedRecipeAggregate.portion":
+		if e.complexity.PreparedRecipeAggregate.Portion == nil {
+			break
+		}
+
+		return e.complexity.PreparedRecipeAggregate.Portion(childComplexity), true
+
+	case "PreparedRecipeAggregate.preparedDate":
+		if e.complexity.PreparedRecipeAggregate.PreparedDate == nil {
+			break
+		}
+
+		return e.complexity.PreparedRecipeAggregate.PreparedDate(childComplexity), true
+
+	case "PreparedRecipeAggregate.recipeName":
+		if e.complexity.PreparedRecipeAggregate.RecipeName == nil {
+			break
+		}
+
+		return e.complexity.PreparedRecipeAggregate.RecipeName(childComplexity), true
+
+	case "PreparedRecipeAggregate.steps":
+		if e.complexity.PreparedRecipeAggregate.Steps == nil {
+			break
+		}
+
+		return e.complexity.PreparedRecipeAggregate.Steps(childComplexity), true
+
 	case "Product.id":
 		if e.complexity.Product.ID == nil {
 			break
@@ -374,6 +510,30 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Purchase.Unit(childComplexity), true
 
+	case "Query.preparedRecipe":
+		if e.complexity.Query.PreparedRecipe == nil {
+			break
+		}
+
+		args, err := ec.field_Query_preparedRecipe_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.PreparedRecipe(childComplexity, args["recipeName"].(string), args["date"].(string)), true
+
+	case "Query.preparedRecipesByDate":
+		if e.complexity.Query.PreparedRecipesByDate == nil {
+			break
+		}
+
+		args, err := ec.field_Query_preparedRecipesByDate_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.PreparedRecipesByDate(childComplexity, args["date"].(string)), true
+
 	case "Query.productAggregate":
 		if e.complexity.Query.ProductAggregate == nil {
 			break
@@ -392,6 +552,53 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.Products(childComplexity), true
+
+	case "Query.recipe":
+		if e.complexity.Query.Recipe == nil {
+			break
+		}
+
+		args, err := ec.field_Query_recipe_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.Recipe(childComplexity, args["recipeName"].(string)), true
+
+	case "Query.recipes":
+		if e.complexity.Query.Recipes == nil {
+			break
+		}
+
+		return e.complexity.Query.Recipes(childComplexity), true
+
+	case "RecipeAggregate.ingredients":
+		if e.complexity.RecipeAggregate.Ingredients == nil {
+			break
+		}
+
+		return e.complexity.RecipeAggregate.Ingredients(childComplexity), true
+
+	case "RecipeAggregate.notes":
+		if e.complexity.RecipeAggregate.Notes == nil {
+			break
+		}
+
+		return e.complexity.RecipeAggregate.Notes(childComplexity), true
+
+	case "RecipeAggregate.recipeName":
+		if e.complexity.RecipeAggregate.RecipeName == nil {
+			break
+		}
+
+		return e.complexity.RecipeAggregate.RecipeName(childComplexity), true
+
+	case "RecipeAggregate.steps":
+		if e.complexity.RecipeAggregate.Steps == nil {
+			break
+		}
+
+		return e.complexity.RecipeAggregate.Steps(childComplexity), true
 
 	case "Variety.nutritionalValue":
 		if e.complexity.Variety.NutritionalValue == nil {
@@ -422,9 +629,13 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	opCtx := graphql.GetOperationContext(ctx)
 	ec := executionContext{opCtx, e, 0, 0, make(chan graphql.DeferredResult)}
 	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
+		ec.unmarshalInputIngredientInput,
 		ec.unmarshalInputNutritionalValueInput,
+		ec.unmarshalInputPrepareRecipe,
+		ec.unmarshalInputPreparedRecipeInput,
 		ec.unmarshalInputProductAggregateInput,
 		ec.unmarshalInputPurchaseInput,
+		ec.unmarshalInputRecipeInput,
 	)
 	first := true
 
@@ -521,7 +732,7 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 	return introspection.WrapTypeFromDef(ec.Schema(), ec.Schema().Types[name]), nil
 }
 
-//go:embed "product.graphqls"
+//go:embed "product.graphqls" "recipe.graphqls"
 var sourcesFS embed.FS
 
 func sourceData(filename string) string {
@@ -534,5 +745,6 @@ func sourceData(filename string) string {
 
 var sources = []*ast.Source{
 	{Name: "product.graphqls", Input: sourceData("product.graphqls"), BuiltIn: false},
+	{Name: "recipe.graphqls", Input: sourceData("recipe.graphqls"), BuiltIn: false},
 }
 var parsedSchema = gqlparser.MustLoadSchema(sources...)
