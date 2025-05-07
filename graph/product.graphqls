@@ -1,8 +1,3 @@
-# GraphQL schema example
-#
-# https://gqlgen.com/getting-started/
-
-
 type ProductAggregate {
   name: String!
   varieties: [Variety!]!
