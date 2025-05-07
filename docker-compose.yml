@@ -20,9 +20,16 @@ services:
     restart: always
     depends_on:
       - db
+      - dynamodb
     ports:
       - 3000:3000
     env_file: .env
+
+    
+  dynamodb:
+    image: amazon/dynamodb-local
+    container_name: dynamodb
+    command: "-jar DynamoDBLocal.jar -sharedDb"
 
 volumes:
   db-data:
