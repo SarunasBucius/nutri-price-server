@@ -44,7 +44,7 @@ type NutritionalValueInput struct {
 	Salt               float64 `json:"salt"`
 }
 
-type PrepareRecipe struct {
+type PlanRecipe struct {
 	RecipeName string  `json:"recipeName"`
 	Portion    float64 `json:"portion"`
 }

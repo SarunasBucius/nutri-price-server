@@ -717,8 +717,8 @@ func (ec *executionContext) unmarshalInputIngredientInput(ctx context.Context, o
 	return it, nil
 }
 
-func (ec *executionContext) unmarshalInputPrepareRecipe(ctx context.Context, obj any) (model.PrepareRecipe, error) {
-	var it model.PrepareRecipe
+func (ec *executionContext) unmarshalInputPlanRecipe(ctx context.Context, obj any) (model.PlanRecipe, error) {
+	var it model.PlanRecipe
 	asMap := map[string]any{}
 	for k, v := range obj.(map[string]any) {
 		asMap[k] = v
@@ -1119,14 +1119,14 @@ func (ec *executionContext) unmarshalNIngredientInput2ᚖgithubᚗcomᚋSarunasB
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) unmarshalNPrepareRecipe2ᚕᚖgithubᚗcomᚋSarunasBuciusᚋnutriᚑpriceᚑserverᚋgraphᚋmodelᚐPrepareRecipeᚄ(ctx context.Context, v any) ([]*model.PrepareRecipe, error) {
+func (ec *executionContext) unmarshalNPlanRecipe2ᚕᚖgithubᚗcomᚋSarunasBuciusᚋnutriᚑpriceᚑserverᚋgraphᚋmodelᚐPlanRecipeᚄ(ctx context.Context, v any) ([]*model.PlanRecipe, error) {
 	var vSlice []any
 	vSlice = graphql.CoerceList(v)
 	var err error
-	res := make([]*model.PrepareRecipe, len(vSlice))
+	res := make([]*model.PlanRecipe, len(vSlice))
 	for i := range vSlice {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
-		res[i], err = ec.unmarshalNPrepareRecipe2ᚖgithubᚗcomᚋSarunasBuciusᚋnutriᚑpriceᚑserverᚋgraphᚋmodelᚐPrepareRecipe(ctx, vSlice[i])
+		res[i], err = ec.unmarshalNPlanRecipe2ᚖgithubᚗcomᚋSarunasBuciusᚋnutriᚑpriceᚑserverᚋgraphᚋmodelᚐPlanRecipe(ctx, vSlice[i])
 		if err != nil {
 			return nil, err
 		}
@@ -1134,8 +1134,8 @@ func (ec *executionContext) unmarshalNPrepareRecipe2ᚕᚖgithubᚗcomᚋSarunas
 	return res, nil
 }
 
-func (ec *executionContext) unmarshalNPrepareRecipe2ᚖgithubᚗcomᚋSarunasBuciusᚋnutriᚑpriceᚑserverᚋgraphᚋmodelᚐPrepareRecipe(ctx context.Context, v any) (*model.PrepareRecipe, error) {
-	res, err := ec.unmarshalInputPrepareRecipe(ctx, v)
+func (ec *executionContext) unmarshalNPlanRecipe2ᚖgithubᚗcomᚋSarunasBuciusᚋnutriᚑpriceᚑserverᚋgraphᚋmodelᚐPlanRecipe(ctx context.Context, v any) (*model.PlanRecipe, error) {
+	res, err := ec.unmarshalInputPlanRecipe(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 

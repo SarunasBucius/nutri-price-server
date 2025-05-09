@@ -56,7 +56,7 @@ type ComplexityRoot struct {
 		DeleteProduct          func(childComplexity int, id string) int
 		DeletePurchase         func(childComplexity int, id string) int
 		DeleteVariety          func(childComplexity int, varietyName string) int
-		PrepareRecipe          func(childComplexity int, date string, prepareRecipes []*model.PrepareRecipe) int
+		PlanRecipes            func(childComplexity int, date string, planRecipes []*model.PlanRecipe) int
 		UpdatePreparedRecipe   func(childComplexity int, recipe model.PreparedRecipeInput) int
 		UpdateProduct          func(childComplexity int, id string, name string) int
 		UpdatePurchase         func(childComplexity int, id string, input model.PurchaseInput) int
@@ -237,17 +237,17 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.DeleteVariety(childComplexity, args["varietyName"].(string)), true
 
-	case "Mutation.prepareRecipe":
-		if e.complexity.Mutation.PrepareRecipe == nil {
+	case "Mutation.planRecipes":
+		if e.complexity.Mutation.PlanRecipes == nil {
 			break
 		}
 
-		args, err := ec.field_Mutation_prepareRecipe_args(context.TODO(), rawArgs)
+		args, err := ec.field_Mutation_planRecipes_args(context.TODO(), rawArgs)
 		if err != nil {
 			return 0, false
 		}
 
-		return e.complexity.Mutation.PrepareRecipe(childComplexity, args["date"].(string), args["prepareRecipes"].([]*model.PrepareRecipe)), true
+		return e.complexity.Mutation.PlanRecipes(childComplexity, args["date"].(string), args["planRecipes"].([]*model.PlanRecipe)), true
 
 	case "Mutation.updatePreparedRecipe":
 		if e.complexity.Mutation.UpdatePreparedRecipe == nil {
@@ -631,7 +631,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
 		ec.unmarshalInputIngredientInput,
 		ec.unmarshalInputNutritionalValueInput,
-		ec.unmarshalInputPrepareRecipe,
+		ec.unmarshalInputPlanRecipe,
 		ec.unmarshalInputPreparedRecipeInput,
 		ec.unmarshalInputProductAggregateInput,
 		ec.unmarshalInputPurchaseInput,

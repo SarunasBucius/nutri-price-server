@@ -30,7 +30,7 @@ type MutationResolver interface {
 	DeleteNutritionalValue(ctx context.Context, id string) (string, error)
 	UpdateRecipe(ctx context.Context, recipe model.RecipeInput) (string, error)
 	UpdatePreparedRecipe(ctx context.Context, recipe model.PreparedRecipeInput) (string, error)
-	PrepareRecipe(ctx context.Context, date string, prepareRecipes []*model.PrepareRecipe) (string, error)
+	PlanRecipes(ctx context.Context, date string, planRecipes []*model.PlanRecipe) (string, error)
 }
 type QueryResolver interface {
 	Products(ctx context.Context) ([]*model.Product, error)
@@ -160,22 +160,22 @@ func (ec *executionContext) field_Mutation_deleteVariety_argsVarietyName(
 	return zeroVal, nil
 }
 
-func (ec *executionContext) field_Mutation_prepareRecipe_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+func (ec *executionContext) field_Mutation_planRecipes_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
-	arg0, err := ec.field_Mutation_prepareRecipe_argsDate(ctx, rawArgs)
+	arg0, err := ec.field_Mutation_planRecipes_argsDate(ctx, rawArgs)
 	if err != nil {
 		return nil, err
 	}
 	args["date"] = arg0
-	arg1, err := ec.field_Mutation_prepareRecipe_argsPrepareRecipes(ctx, rawArgs)
+	arg1, err := ec.field_Mutation_planRecipes_argsPlanRecipes(ctx, rawArgs)
 	if err != nil {
 		return nil, err
 	}
-	args["prepareRecipes"] = arg1
+	args["planRecipes"] = arg1
 	return args, nil
 }
-func (ec *executionContext) field_Mutation_prepareRecipe_argsDate(
+func (ec *executionContext) field_Mutation_planRecipes_argsDate(
 	ctx context.Context,
 	rawArgs map[string]any,
 ) (string, error) {
@@ -188,16 +188,16 @@ func (ec *executionContext) field_Mutation_prepareRecipe_argsDate(
 	return zeroVal, nil
 }
 
-func (ec *executionContext) field_Mutation_prepareRecipe_argsPrepareRecipes(
+func (ec *executionContext) field_Mutation_planRecipes_argsPlanRecipes(
 	ctx context.Context,
 	rawArgs map[string]any,
-) ([]*model.PrepareRecipe, error) {
-	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("prepareRecipes"))
-	if tmp, ok := rawArgs["prepareRecipes"]; ok {
-		return ec.unmarshalNPrepareRecipe2ᚕᚖgithubᚗcomᚋSarunasBuciusᚋnutriᚑpriceᚑserverᚋgraphᚋmodelᚐPrepareRecipeᚄ(ctx, tmp)
+) ([]*model.PlanRecipe, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("planRecipes"))
+	if tmp, ok := rawArgs["planRecipes"]; ok {
+		return ec.unmarshalNPlanRecipe2ᚕᚖgithubᚗcomᚋSarunasBuciusᚋnutriᚑpriceᚑserverᚋgraphᚋmodelᚐPlanRecipeᚄ(ctx, tmp)
 	}
 
-	var zeroVal []*model.PrepareRecipe
+	var zeroVal []*model.PlanRecipe
 	return zeroVal, nil
 }
 
@@ -1175,8 +1175,8 @@ func (ec *executionContext) fieldContext_Mutation_updatePreparedRecipe(ctx conte
 	return fc, nil
 }
 
-func (ec *executionContext) _Mutation_prepareRecipe(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Mutation_prepareRecipe(ctx, field)
+func (ec *executionContext) _Mutation_planRecipes(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_planRecipes(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -1189,7 +1189,7 @@ func (ec *executionContext) _Mutation_prepareRecipe(ctx context.Context, field g
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().PrepareRecipe(rctx, fc.Args["date"].(string), fc.Args["prepareRecipes"].([]*model.PrepareRecipe))
+		return ec.resolvers.Mutation().PlanRecipes(rctx, fc.Args["date"].(string), fc.Args["planRecipes"].([]*model.PlanRecipe))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1206,7 +1206,7 @@ func (ec *executionContext) _Mutation_prepareRecipe(ctx context.Context, field g
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Mutation_prepareRecipe(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Mutation_planRecipes(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Mutation",
 		Field:      field,
@@ -1223,7 +1223,7 @@ func (ec *executionContext) fieldContext_Mutation_prepareRecipe(ctx context.Cont
 		}
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Mutation_prepareRecipe_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+	if fc.Args, err = ec.field_Mutation_planRecipes_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -3105,9 +3105,9 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
-		case "prepareRecipe":
+		case "planRecipes":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Mutation_prepareRecipe(ctx, field)
+				return ec._Mutation_planRecipes(ctx, field)
 			})
 			if out.Values[i] == graphql.Null {
 				out.Invalids++

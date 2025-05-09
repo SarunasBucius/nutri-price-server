@@ -50,11 +50,11 @@ func (r *mutationResolver) UpdatePreparedRecipe(ctx context.Context, recipe mode
 	return recipe.RecipeName, nil
 }
 
-// PrepareRecipe is the resolver for the prepareRecipe field.
-func (r *mutationResolver) PrepareRecipe(ctx context.Context, date string, prepareRecipes []*model.PrepareRecipe) (string, error) {
-	recipeNames := make([]map[string]types.AttributeValue, 0, len(prepareRecipes))
-	portionByName := make(map[string]float64, len(prepareRecipes))
-	for _, recipe := range prepareRecipes {
+// PlanRecipes is the resolver for the planRecipes field.
+func (r *mutationResolver) PlanRecipes(ctx context.Context, date string, planRecipes []*model.PlanRecipe) (string, error) {
+	recipeNames := make([]map[string]types.AttributeValue, 0, len(planRecipes))
+	portionByName := make(map[string]float64, len(planRecipes))
+	for _, recipe := range planRecipes {
 		recipeNames = append(recipeNames, map[string]types.AttributeValue{
 			"RecipeName": &types.AttributeValueMemberS{Value: recipe.RecipeName}})
 		portionByName[recipe.RecipeName] = recipe.Portion
