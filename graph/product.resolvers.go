@@ -11,6 +11,7 @@ import (
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/SarunasBucius/nutri-price-server/graph/model"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
@@ -77,24 +78,75 @@ func (r *mutationResolver) CreateProduct(ctx context.Context, input model.Produc
 // UpdateProduct is the resolver for the updateProduct field.
 func (r *mutationResolver) UpdateProduct(ctx context.Context, id string, name string) (string, error) {
 	query := `
+	SELECT id FROM products
+	WHERE name = $1
+	`
+	var existingProductID string
+	if err := r.DB.QueryRow(ctx, query, name).Scan(&existingProductID); err != nil && err != pgx.ErrNoRows {
+		return "", fmt.Errorf("check if product with name exists: %w", err)
+	}
+
+	if existingProductID == "" {
+		query := `
 	UPDATE products
 	SET name = $1
 	WHERE id = $2`
-	if _, err := r.DB.Exec(ctx, query, name, id); err != nil {
-		return "", fmt.Errorf("update product: %w", err)
+		if _, err := r.DB.Exec(ctx, query, name, id); err != nil {
+			return "", fmt.Errorf("update product: %w", err)
+		}
+		return id, nil
 	}
-	return id, nil
+	// If the product with the same name already exists, we merge the nutritional values and purchases.
+	// TODO handle error in case merged products both have nutritional values with same variety name.
+	query = `
+		UPDATE nutritional_values_v2
+		SET product_id = $1
+		WHERE product_id = $2`
+	if _, err := r.DB.Exec(ctx, query, existingProductID, id); err != nil {
+		return "", fmt.Errorf("update nutritional values product id: %w", err)
+	}
+
+	query = `
+		UPDATE purchases
+		SET product_id = $1
+		WHERE product_id = $2`
+	if _, err := r.DB.Exec(ctx, query, existingProductID, id); err != nil {
+		return "", fmt.Errorf("update purchases product id: %w", err)
+	}
+
+	query = `
+		DELETE FROM products
+		WHERE id = $1`
+	if _, err := r.DB.Exec(ctx, query, id); err != nil {
+		return "", fmt.Errorf("delete old product: %w", err)
+	}
+
+	return existingProductID, nil
 }
 
 // UpdateVariety is the resolver for the updateVariety field.
 func (r *mutationResolver) UpdateVariety(ctx context.Context, oldName string, varietyName string) (string, error) {
-	query := `
+	// TODO return an error if nutritional value for old and new variety exist.
+	query := `SELECT COUNT(*) FROM nutritional_values_v2 WHERE variety_name = $1 OR variety_name = $2`
+	var count int
+	if err := r.DB.QueryRow(ctx, query, varietyName, oldName).Scan(&count); err != nil {
+		return "", fmt.Errorf("check nutritional values for old and new variety: %w", err)
+	}
+	if count > 1 {
+		_, err := r.DB.Exec(ctx, "DELETE FROM nutritional_values_v2 WHERE variety_name = $1", oldName)
+		if err != nil {
+			return "", fmt.Errorf("delete old variety nutritional values: %w", err)
+		}
+	} else {
+		query = `
 	UPDATE nutritional_values_v2
 	SET variety_name = $1
 	WHERE variety_name = $2`
-	if _, err := r.DB.Exec(ctx, query, varietyName, oldName); err != nil {
-		return "", fmt.Errorf("update nutritional values variety name: %w", err)
+		if _, err := r.DB.Exec(ctx, query, varietyName, oldName); err != nil {
+			return "", fmt.Errorf("update nutritional values variety name: %w", err)
+		}
 	}
+
 	query = `
 	UPDATE purchases
 	SET variety_name = $1
