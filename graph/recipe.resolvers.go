@@ -185,3 +185,136 @@ func (r *queryResolver) PreparedRecipe(ctx context.Context, recipeName string, d
 	}
 	return &recipe, nil
 }
+
+// CalculateDaysConsumption is the resolver for the calculateDaysConsumption field.
+func (r *queryResolver) CalculateDaysConsumption(ctx context.Context, date string) (*model.CalculatedDay, error) {
+	res, err := r.DynamoDB.Query(ctx, &dynamodb.QueryInput{
+		TableName:              aws.String("PreparedRecipes"),
+		KeyConditionExpression: aws.String("PreparedDate = :date"),
+		ExpressionAttributeValues: map[string]types.AttributeValue{
+			":date": &types.AttributeValueMemberS{Value: date},
+		},
+		Select:               types.SelectSpecificAttributes,
+		ProjectionExpression: aws.String("RecipeName"),
+	})
+	if err != nil {
+		return nil, fmt.Errorf("query items: %w", err)
+	}
+
+	recipeNames := make([]string, 0, len(res.Items))
+	for _, recipe := range res.Items {
+		var recipeName string
+		if err := attributevalue.Unmarshal(recipe["RecipeName"], &recipeName); err != nil {
+			return nil, fmt.Errorf("unmarshal recipe name: %w", err)
+		}
+		recipeNames = append(recipeNames, recipeName)
+	}
+
+	calculatedDay := model.CalculatedDay{Date: date}
+	ingredients := make(map[string][]string)
+	for _, recipeName := range recipeNames {
+		recipeDB, err := r.DynamoDB.GetItem(ctx, &dynamodb.GetItemInput{
+			TableName: aws.String("PreparedRecipes"),
+			Key: map[string]types.AttributeValue{
+				"RecipeName":   &types.AttributeValueMemberS{Value: recipeName},
+				"PreparedDate": &types.AttributeValueMemberS{Value: date},
+			},
+		})
+		if err != nil {
+			return nil, fmt.Errorf("get item: %w", err)
+		}
+		var recipe model.PreparedRecipeAggregate
+		if err := attributevalue.UnmarshalMap(recipeDB.Item, &recipe); err != nil {
+			return nil, fmt.Errorf("unmarshal item: %w", err)
+		}
+
+		calculatedProducts := make([]*model.CalculatedProduct, 0, len(recipe.Ingredients))
+		for _, ingredient := range recipe.Ingredients {
+			calculatedProduct := &model.CalculatedProduct{
+				Product:  ingredient.Product,
+				Unit:     ingredient.Unit,
+				Quantity: ingredient.Quantity * recipe.Portion,
+			}
+			calculatedProducts = append(calculatedProducts, calculatedProduct)
+			ingredients[ingredient.Unit] = append(ingredients[ingredient.Unit], ingredient.Product)
+		}
+		calculatedDay.Recipes = append(calculatedDay.Recipes, &model.CalculatedRecipe{
+			RecipeName: recipeName,
+			Products:   calculatedProducts,
+			Portion:    recipe.Portion,
+		})
+	}
+
+	nvs := make(map[string]model.NutritionalValue, len(ingredients))
+	for unit, products := range ingredients {
+		query := `
+		SELECT nutritional_values_v2.id, products.name, unit, energy_value_kcal, fat, saturated_fat, carbohydrate, carbohydrate_sugars, fibre, protein, salt
+		FROM nutritional_values_v2
+		JOIN products ON nutritional_values_v2.product_id = products.id
+		WHERE products.name=ANY($1) AND nutritional_values_v2.unit=$2`
+		rows, err := r.DB.Query(ctx, query, products, unit)
+		if err != nil {
+			return nil, fmt.Errorf("query nutritional values: %w", err)
+		}
+		defer rows.Close()
+
+		for rows.Next() {
+			nv := model.NutritionalValue{}
+			var productName string
+			if err := rows.Scan(&nv.ID, &productName, &nv.Unit, &nv.EnergyValueKcal,
+				&nv.Fat, &nv.SaturatedFat, &nv.Carbohydrate, &nv.CarbohydrateSugars,
+				&nv.Fibre, &nv.Protein, &nv.Salt); err != nil {
+				return nil, fmt.Errorf("scan nutritional value: %w", err)
+			}
+			nvs[productName] = nv
+		}
+	}
+
+	for i := range calculatedDay.Recipes {
+		for j, p := range calculatedDay.Recipes[i].Products {
+			if nv, ok := nvs[p.Product]; ok {
+				q := p.Quantity
+				p.EnergyValueKcal = nv.EnergyValueKcal / 100 * q
+				p.Fat = nv.Fat / 100 * q
+				p.SaturatedFat = nv.SaturatedFat / 100 * q
+				p.Carbohydrate = nv.Carbohydrate / 100 * q
+				p.CarbohydrateSugars = nv.CarbohydrateSugars / 100 * q
+				p.Fibre = nv.Fibre / 100 * q
+				p.Protein = nv.Protein / 100 * q
+				p.Salt = nv.Salt / 100 * q
+			}
+			calculatedDay.Recipes[i].Products[j] = p
+		}
+		// TODO: calc prices, truncate values
+		var totalNV model.NutritionalValue
+		for _, p := range calculatedDay.Recipes[i].Products {
+			totalNV.EnergyValueKcal += p.EnergyValueKcal
+			totalNV.Fat += p.Fat
+			totalNV.SaturatedFat += p.SaturatedFat
+			totalNV.Carbohydrate += p.Carbohydrate
+			totalNV.CarbohydrateSugars += p.CarbohydrateSugars
+			totalNV.Fibre += p.Fibre
+			totalNV.Protein += p.Protein
+			totalNV.Salt += p.Salt
+		}
+		calculatedDay.Recipes[i].EnergyValueKcal = totalNV.EnergyValueKcal
+		calculatedDay.Recipes[i].Fat = totalNV.Fat
+		calculatedDay.Recipes[i].SaturatedFat = totalNV.SaturatedFat
+		calculatedDay.Recipes[i].Carbohydrate = totalNV.Carbohydrate
+		calculatedDay.Recipes[i].CarbohydrateSugars = totalNV.CarbohydrateSugars
+		calculatedDay.Recipes[i].Fibre = totalNV.Fibre
+		calculatedDay.Recipes[i].Protein = totalNV.Protein
+		calculatedDay.Recipes[i].Salt = totalNV.Salt
+
+		calculatedDay.EnergyValueKcal += totalNV.EnergyValueKcal
+		calculatedDay.Fat += totalNV.Fat
+		calculatedDay.SaturatedFat += totalNV.SaturatedFat
+		calculatedDay.Carbohydrate += totalNV.Carbohydrate
+		calculatedDay.CarbohydrateSugars += totalNV.CarbohydrateSugars
+		calculatedDay.Fibre += totalNV.Fibre
+		calculatedDay.Protein += totalNV.Protein
+		calculatedDay.Salt += totalNV.Salt
+	}
+
+	return &calculatedDay, nil
+}

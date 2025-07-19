@@ -2,6 +2,51 @@
 
 package model
 
+type CalculatedDay struct {
+	Date               string              `json:"date"`
+	Recipes            []*CalculatedRecipe `json:"recipes"`
+	Price              float64             `json:"price"`
+	EnergyValueKcal    float64             `json:"energyValueKcal"`
+	Fat                float64             `json:"fat"`
+	SaturatedFat       float64             `json:"saturatedFat"`
+	Carbohydrate       float64             `json:"carbohydrate"`
+	CarbohydrateSugars float64             `json:"carbohydrateSugars"`
+	Fibre              float64             `json:"fibre"`
+	Protein            float64             `json:"protein"`
+	Salt               float64             `json:"salt"`
+}
+
+type CalculatedProduct struct {
+	Product            string  `json:"product"`
+	VarietyName        string  `json:"varietyName"`
+	Price              float64 `json:"price"`
+	Unit               string  `json:"unit"`
+	Quantity           float64 `json:"quantity"`
+	EnergyValueKcal    float64 `json:"energyValueKcal"`
+	Fat                float64 `json:"fat"`
+	SaturatedFat       float64 `json:"saturatedFat"`
+	Carbohydrate       float64 `json:"carbohydrate"`
+	CarbohydrateSugars float64 `json:"carbohydrateSugars"`
+	Fibre              float64 `json:"fibre"`
+	Protein            float64 `json:"protein"`
+	Salt               float64 `json:"salt"`
+}
+
+type CalculatedRecipe struct {
+	RecipeName         string               `json:"recipeName"`
+	Products           []*CalculatedProduct `json:"products"`
+	Portion            float64              `json:"portion"`
+	Price              float64              `json:"price"`
+	EnergyValueKcal    float64              `json:"energyValueKcal"`
+	Fat                float64              `json:"fat"`
+	SaturatedFat       float64              `json:"saturatedFat"`
+	Carbohydrate       float64              `json:"carbohydrate"`
+	CarbohydrateSugars float64              `json:"carbohydrateSugars"`
+	Fibre              float64              `json:"fibre"`
+	Protein            float64              `json:"protein"`
+	Salt               float64              `json:"salt"`
+}
+
 type Ingredient struct {
 	Product  string  `json:"product"`
 	Quantity float64 `json:"quantity"`

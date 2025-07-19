@@ -43,6 +43,51 @@ type DirectiveRoot struct {
 }
 
 type ComplexityRoot struct {
+	CalculatedDay struct {
+		Carbohydrate       func(childComplexity int) int
+		CarbohydrateSugars func(childComplexity int) int
+		Date               func(childComplexity int) int
+		EnergyValueKcal    func(childComplexity int) int
+		Fat                func(childComplexity int) int
+		Fibre              func(childComplexity int) int
+		Price              func(childComplexity int) int
+		Protein            func(childComplexity int) int
+		Recipes            func(childComplexity int) int
+		Salt               func(childComplexity int) int
+		SaturatedFat       func(childComplexity int) int
+	}
+
+	CalculatedProduct struct {
+		Carbohydrate       func(childComplexity int) int
+		CarbohydrateSugars func(childComplexity int) int
+		EnergyValueKcal    func(childComplexity int) int
+		Fat                func(childComplexity int) int
+		Fibre              func(childComplexity int) int
+		Price              func(childComplexity int) int
+		Product            func(childComplexity int) int
+		Protein            func(childComplexity int) int
+		Quantity           func(childComplexity int) int
+		Salt               func(childComplexity int) int
+		SaturatedFat       func(childComplexity int) int
+		Unit               func(childComplexity int) int
+		VarietyName        func(childComplexity int) int
+	}
+
+	CalculatedRecipe struct {
+		Carbohydrate       func(childComplexity int) int
+		CarbohydrateSugars func(childComplexity int) int
+		EnergyValueKcal    func(childComplexity int) int
+		Fat                func(childComplexity int) int
+		Fibre              func(childComplexity int) int
+		Portion            func(childComplexity int) int
+		Price              func(childComplexity int) int
+		Products           func(childComplexity int) int
+		Protein            func(childComplexity int) int
+		RecipeName         func(childComplexity int) int
+		Salt               func(childComplexity int) int
+		SaturatedFat       func(childComplexity int) int
+	}
+
 	Ingredient struct {
 		Notes    func(childComplexity int) int
 		Product  func(childComplexity int) int
@@ -108,12 +153,13 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		PreparedRecipe        func(childComplexity int, recipeName string, date string) int
-		PreparedRecipesByDate func(childComplexity int, date string) int
-		ProductAggregate      func(childComplexity int, id string) int
-		Products              func(childComplexity int) int
-		Recipe                func(childComplexity int, recipeName string) int
-		Recipes               func(childComplexity int) int
+		CalculateDaysConsumption func(childComplexity int, date string) int
+		PreparedRecipe           func(childComplexity int, recipeName string, date string) int
+		PreparedRecipesByDate    func(childComplexity int, date string) int
+		ProductAggregate         func(childComplexity int, id string) int
+		Products                 func(childComplexity int) int
+		Recipe                   func(childComplexity int, recipeName string) int
+		Recipes                  func(childComplexity int) int
 	}
 
 	RecipeAggregate struct {
@@ -148,6 +194,258 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 	ec := executionContext{nil, e, 0, 0, nil}
 	_ = ec
 	switch typeName + "." + field {
+
+	case "CalculatedDay.carbohydrate":
+		if e.complexity.CalculatedDay.Carbohydrate == nil {
+			break
+		}
+
+		return e.complexity.CalculatedDay.Carbohydrate(childComplexity), true
+
+	case "CalculatedDay.carbohydrateSugars":
+		if e.complexity.CalculatedDay.CarbohydrateSugars == nil {
+			break
+		}
+
+		return e.complexity.CalculatedDay.CarbohydrateSugars(childComplexity), true
+
+	case "CalculatedDay.date":
+		if e.complexity.CalculatedDay.Date == nil {
+			break
+		}
+
+		return e.complexity.CalculatedDay.Date(childComplexity), true
+
+	case "CalculatedDay.energyValueKcal":
+		if e.complexity.CalculatedDay.EnergyValueKcal == nil {
+			break
+		}
+
+		return e.complexity.CalculatedDay.EnergyValueKcal(childComplexity), true
+
+	case "CalculatedDay.fat":
+		if e.complexity.CalculatedDay.Fat == nil {
+			break
+		}
+
+		return e.complexity.CalculatedDay.Fat(childComplexity), true
+
+	case "CalculatedDay.fibre":
+		if e.complexity.CalculatedDay.Fibre == nil {
+			break
+		}
+
+		return e.complexity.CalculatedDay.Fibre(childComplexity), true
+
+	case "CalculatedDay.price":
+		if e.complexity.CalculatedDay.Price == nil {
+			break
+		}
+
+		return e.complexity.CalculatedDay.Price(childComplexity), true
+
+	case "CalculatedDay.protein":
+		if e.complexity.CalculatedDay.Protein == nil {
+			break
+		}
+
+		return e.complexity.CalculatedDay.Protein(childComplexity), true
+
+	case "CalculatedDay.recipes":
+		if e.complexity.CalculatedDay.Recipes == nil {
+			break
+		}
+
+		return e.complexity.CalculatedDay.Recipes(childComplexity), true
+
+	case "CalculatedDay.salt":
+		if e.complexity.CalculatedDay.Salt == nil {
+			break
+		}
+
+		return e.complexity.CalculatedDay.Salt(childComplexity), true
+
+	case "CalculatedDay.saturatedFat":
+		if e.complexity.CalculatedDay.SaturatedFat == nil {
+			break
+		}
+
+		return e.complexity.CalculatedDay.SaturatedFat(childComplexity), true
+
+	case "CalculatedProduct.carbohydrate":
+		if e.complexity.CalculatedProduct.Carbohydrate == nil {
+			break
+		}
+
+		return e.complexity.CalculatedProduct.Carbohydrate(childComplexity), true
+
+	case "CalculatedProduct.carbohydrateSugars":
+		if e.complexity.CalculatedProduct.CarbohydrateSugars == nil {
+			break
+		}
+
+		return e.complexity.CalculatedProduct.CarbohydrateSugars(childComplexity), true
+
+	case "CalculatedProduct.energyValueKcal":
+		if e.complexity.CalculatedProduct.EnergyValueKcal == nil {
+			break
+		}
+
+		return e.complexity.CalculatedProduct.EnergyValueKcal(childComplexity), true
+
+	case "CalculatedProduct.fat":
+		if e.complexity.CalculatedProduct.Fat == nil {
+			break
+		}
+
+		return e.complexity.CalculatedProduct.Fat(childComplexity), true
+
+	case "CalculatedProduct.fibre":
+		if e.complexity.CalculatedProduct.Fibre == nil {
+			break
+		}
+
+		return e.complexity.CalculatedProduct.Fibre(childComplexity), true
+
+	case "CalculatedProduct.price":
+		if e.complexity.CalculatedProduct.Price == nil {
+			break
+		}
+
+		return e.complexity.CalculatedProduct.Price(childComplexity), true
+
+	case "CalculatedProduct.product":
+		if e.complexity.CalculatedProduct.Product == nil {
+			break
+		}
+
+		return e.complexity.CalculatedProduct.Product(childComplexity), true
+
+	case "CalculatedProduct.protein":
+		if e.complexity.CalculatedProduct.Protein == nil {
+			break
+		}
+
+		return e.complexity.CalculatedProduct.Protein(childComplexity), true
+
+	case "CalculatedProduct.quantity":
+		if e.complexity.CalculatedProduct.Quantity == nil {
+			break
+		}
+
+		return e.complexity.CalculatedProduct.Quantity(childComplexity), true
+
+	case "CalculatedProduct.salt":
+		if e.complexity.CalculatedProduct.Salt == nil {
+			break
+		}
+
+		return e.complexity.CalculatedProduct.Salt(childComplexity), true
+
+	case "CalculatedProduct.saturatedFat":
+		if e.complexity.CalculatedProduct.SaturatedFat == nil {
+			break
+		}
+
+		return e.complexity.CalculatedProduct.SaturatedFat(childComplexity), true
+
+	case "CalculatedProduct.unit":
+		if e.complexity.CalculatedProduct.Unit == nil {
+			break
+		}
+
+		return e.complexity.CalculatedProduct.Unit(childComplexity), true
+
+	case "CalculatedProduct.varietyName":
+		if e.complexity.CalculatedProduct.VarietyName == nil {
+			break
+		}
+
+		return e.complexity.CalculatedProduct.VarietyName(childComplexity), true
+
+	case "CalculatedRecipe.carbohydrate":
+		if e.complexity.CalculatedRecipe.Carbohydrate == nil {
+			break
+		}
+
+		return e.complexity.CalculatedRecipe.Carbohydrate(childComplexity), true
+
+	case "CalculatedRecipe.carbohydrateSugars":
+		if e.complexity.CalculatedRecipe.CarbohydrateSugars == nil {
+			break
+		}
+
+		return e.complexity.CalculatedRecipe.CarbohydrateSugars(childComplexity), true
+
+	case "CalculatedRecipe.energyValueKcal":
+		if e.complexity.CalculatedRecipe.EnergyValueKcal == nil {
+			break
+		}
+
+		return e.complexity.CalculatedRecipe.EnergyValueKcal(childComplexity), true
+
+	case "CalculatedRecipe.fat":
+		if e.complexity.CalculatedRecipe.Fat == nil {
+			break
+		}
+
+		return e.complexity.CalculatedRecipe.Fat(childComplexity), true
+
+	case "CalculatedRecipe.fibre":
+		if e.complexity.CalculatedRecipe.Fibre == nil {
+			break
+		}
+
+		return e.complexity.CalculatedRecipe.Fibre(childComplexity), true
+
+	case "CalculatedRecipe.portion":
+		if e.complexity.CalculatedRecipe.Portion == nil {
+			break
+		}
+
+		return e.complexity.CalculatedRecipe.Portion(childComplexity), true
+
+	case "CalculatedRecipe.price":
+		if e.complexity.CalculatedRecipe.Price == nil {
+			break
+		}
+
+		return e.complexity.CalculatedRecipe.Price(childComplexity), true
+
+	case "CalculatedRecipe.products":
+		if e.complexity.CalculatedRecipe.Products == nil {
+			break
+		}
+
+		return e.complexity.CalculatedRecipe.Products(childComplexity), true
+
+	case "CalculatedRecipe.protein":
+		if e.complexity.CalculatedRecipe.Protein == nil {
+			break
+		}
+
+		return e.complexity.CalculatedRecipe.Protein(childComplexity), true
+
+	case "CalculatedRecipe.recipeName":
+		if e.complexity.CalculatedRecipe.RecipeName == nil {
+			break
+		}
+
+		return e.complexity.CalculatedRecipe.RecipeName(childComplexity), true
+
+	case "CalculatedRecipe.salt":
+		if e.complexity.CalculatedRecipe.Salt == nil {
+			break
+		}
+
+		return e.complexity.CalculatedRecipe.Salt(childComplexity), true
+
+	case "CalculatedRecipe.saturatedFat":
+		if e.complexity.CalculatedRecipe.SaturatedFat == nil {
+			break
+		}
+
+		return e.complexity.CalculatedRecipe.SaturatedFat(childComplexity), true
 
 	case "Ingredient.notes":
 		if e.complexity.Ingredient.Notes == nil {
@@ -509,6 +807,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Purchase.Unit(childComplexity), true
+
+	case "Query.calculateDaysConsumption":
+		if e.complexity.Query.CalculateDaysConsumption == nil {
+			break
+		}
+
+		args, err := ec.field_Query_calculateDaysConsumption_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.CalculateDaysConsumption(childComplexity, args["date"].(string)), true
 
 	case "Query.preparedRecipe":
 		if e.complexity.Query.PreparedRecipe == nil {

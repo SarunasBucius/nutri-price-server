@@ -21,11 +21,57 @@ type Ingredient {
   notes: String!
 }
 
+type CalculatedDay {
+  date: String!
+  recipes: [CalculatedRecipe!]!
+  price: Float!
+  energyValueKcal: Float!
+  fat: Float!
+  saturatedFat: Float!
+  carbohydrate: Float!
+  carbohydrateSugars: Float!
+  fibre: Float!
+  protein: Float!
+  salt: Float!
+}
+
+type CalculatedRecipe {
+  recipeName: String!
+  products: [CalculatedProduct!]!
+  portion: Float!
+  price: Float!
+  energyValueKcal: Float!
+  fat: Float!
+  saturatedFat: Float!
+  carbohydrate: Float!
+  carbohydrateSugars: Float!
+  fibre: Float!
+  protein: Float!
+  salt: Float!
+}
+
+type CalculatedProduct {
+  product: String!
+  varietyName: String!
+  price: Float!
+  unit: String!
+  quantity: Float!
+  energyValueKcal: Float!
+  fat: Float!
+  saturatedFat: Float!
+  carbohydrate: Float!
+  carbohydrateSugars: Float!
+  fibre: Float!
+  protein: Float!
+  salt: Float!
+}
+
 extend type Query {
   recipes: [String!]!
   recipe(recipeName: String!): RecipeAggregate!
   preparedRecipesByDate(date: String!): [String!]!
   preparedRecipe(recipeName: String!, date: String!): PreparedRecipeAggregate!
+  calculateDaysConsumption(date: String!): CalculatedDay!
 }
 
 input RecipeInput {
