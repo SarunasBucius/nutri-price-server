@@ -1,5 +1,6 @@
 type RecipeAggregate {
   recipeName: String!
+  isFavorite: Boolean!
   steps: [String!]!
   notes: String!
   ingredients: [Ingredient!]!
@@ -76,6 +77,7 @@ extend type Query {
 
 input RecipeInput {
   recipeName: String!
+  isFavorite: Boolean!
   steps: [String!]!
   notes: String!
   ingredients: [IngredientInput!]!

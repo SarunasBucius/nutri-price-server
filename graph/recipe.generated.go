@@ -2161,6 +2161,50 @@ func (ec *executionContext) fieldContext_RecipeAggregate_recipeName(_ context.Co
 	return fc, nil
 }
 
+func (ec *executionContext) _RecipeAggregate_isFavorite(ctx context.Context, field graphql.CollectedField, obj *model.RecipeAggregate) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_RecipeAggregate_isFavorite(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.IsFavorite, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_RecipeAggregate_isFavorite(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "RecipeAggregate",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _RecipeAggregate_steps(ctx context.Context, field graphql.CollectedField, obj *model.RecipeAggregate) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_RecipeAggregate_steps(ctx, field)
 	if err != nil {
@@ -2458,7 +2502,7 @@ func (ec *executionContext) unmarshalInputRecipeInput(ctx context.Context, obj a
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"recipeName", "steps", "notes", "ingredients"}
+	fieldsInOrder := [...]string{"recipeName", "isFavorite", "steps", "notes", "ingredients"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -2472,6 +2516,13 @@ func (ec *executionContext) unmarshalInputRecipeInput(ctx context.Context, obj a
 				return it, err
 			}
 			it.RecipeName = data
+		case "isFavorite":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("isFavorite"))
+			data, err := ec.unmarshalNBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.IsFavorite = data
 		case "steps":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("steps"))
 			data, err := ec.unmarshalNString2ᚕstringᚄ(ctx, v)
@@ -2920,6 +2971,11 @@ func (ec *executionContext) _RecipeAggregate(ctx context.Context, sel ast.Select
 			out.Values[i] = graphql.MarshalString("RecipeAggregate")
 		case "recipeName":
 			out.Values[i] = ec._RecipeAggregate_recipeName(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "isFavorite":
+			out.Values[i] = ec._RecipeAggregate_isFavorite(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}

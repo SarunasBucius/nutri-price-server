@@ -153,6 +153,7 @@ type Query struct {
 
 type RecipeAggregate struct {
 	RecipeName  string        `json:"recipeName"`
+	IsFavorite  bool          `json:"isFavorite"`
 	Steps       []string      `json:"steps"`
 	Notes       string        `json:"notes"`
 	Ingredients []*Ingredient `json:"ingredients"`
@@ -160,6 +161,7 @@ type RecipeAggregate struct {
 
 type RecipeInput struct {
 	RecipeName  string             `json:"recipeName"`
+	IsFavorite  bool               `json:"isFavorite"`
 	Steps       []string           `json:"steps"`
 	Notes       string             `json:"notes"`
 	Ingredients []*IngredientInput `json:"ingredients"`

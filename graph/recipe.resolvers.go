@@ -7,6 +7,7 @@ package graph
 import (
 	"context"
 	"fmt"
+	"sort"
 	"strconv"
 
 	"github.com/SarunasBucius/nutri-price-server/graph/model"
@@ -104,22 +105,39 @@ func (r *queryResolver) Recipes(ctx context.Context) ([]string, error) {
 	res, err := r.DynamoDB.Scan(ctx, &dynamodb.ScanInput{
 		TableName:            aws.String("Recipes"),
 		Select:               types.SelectSpecificAttributes,
-		ProjectionExpression: aws.String("RecipeName"),
+		ProjectionExpression: aws.String("RecipeName, IsFavorite"),
 	})
 	if err != nil {
 		return nil, fmt.Errorf("query items: %w", err)
 	}
 
-	recipes := make([]string, 0, len(res.Items))
-	for _, recipe := range res.Items {
-		var recipeName string
-		if err := attributevalue.Unmarshal(recipe["RecipeName"], &recipeName); err != nil {
-			return nil, fmt.Errorf("unmarshal recipe name: %w", err)
-		}
-		recipes = append(recipes, recipeName)
+	type Recipe struct {
+		Name       string `dynamodbav:"RecipeName"`
+		IsFavorite bool   `dynamodbav:"IsFavorite"`
 	}
 
-	return recipes, nil
+	recipes := make([]Recipe, 0, len(res.Items))
+	for _, item := range res.Items {
+		var recipe Recipe
+		if err := attributevalue.UnmarshalMap(item, &recipe); err != nil {
+			return nil, fmt.Errorf("unmarshal item: %w", err)
+		}
+		recipes = append(recipes, recipe)
+	}
+
+	sort.Slice(recipes, func(i, j int) bool {
+		if recipes[i].IsFavorite != recipes[j].IsFavorite {
+			return recipes[i].IsFavorite
+		}
+		return recipes[i].Name < recipes[j].Name
+	})
+
+	sortedNames := make([]string, 0, len(recipes))
+	for _, recipe := range recipes {
+		sortedNames = append(sortedNames, recipe.Name)
+	}
+
+	return sortedNames, nil
 }
 
 // Recipe is the resolver for the recipe field.

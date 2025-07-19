@@ -2382,6 +2382,8 @@ func (ec *executionContext) fieldContext_Query_recipe(ctx context.Context, field
 			switch field.Name {
 			case "recipeName":
 				return ec.fieldContext_RecipeAggregate_recipeName(ctx, field)
+			case "isFavorite":
+				return ec.fieldContext_RecipeAggregate_isFavorite(ctx, field)
 			case "steps":
 				return ec.fieldContext_RecipeAggregate_steps(ctx, field)
 			case "notes":

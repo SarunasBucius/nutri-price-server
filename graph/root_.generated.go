@@ -164,6 +164,7 @@ type ComplexityRoot struct {
 
 	RecipeAggregate struct {
 		Ingredients func(childComplexity int) int
+		IsFavorite  func(childComplexity int) int
 		Notes       func(childComplexity int) int
 		RecipeName  func(childComplexity int) int
 		Steps       func(childComplexity int) int
@@ -888,6 +889,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.RecipeAggregate.Ingredients(childComplexity), true
+
+	case "RecipeAggregate.isFavorite":
+		if e.complexity.RecipeAggregate.IsFavorite == nil {
+			break
+		}
+
+		return e.complexity.RecipeAggregate.IsFavorite(childComplexity), true
 
 	case "RecipeAggregate.notes":
 		if e.complexity.RecipeAggregate.Notes == nil {
